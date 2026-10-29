@@ -26,8 +26,8 @@ An autonomous Streamlit Community Cloud AI Agent designed for robust multi-step 
 - **Phase 1**: Foundation, Streamlit App (`app.py`), Dependency Manifest (`requirements.txt`), `.gitignore`, `.env.example`, and README with Roadmap. ✅
 - **Phase 2**: SQLite Persistent Task Memory & Dynamic 1–50 Step Plan Engine. ✅
 - **Phase 3**: Safe Workspace Tools (Inspection, File Editor, Search, Audit, Strict Command Runner). ✅
-- **Phase 4 (Current)**: Execution & Recovery Engine (Resumable Steps, Retries, Validation). ✅
-- **Phase 5**: Dual Delivery Center (GitHub Delivery instructions & ZIP Archive Export). ⏳
+- **Phase 4**: Execution & Recovery Engine (Resumable Steps, Retries, Validation). ✅
+- **Phase 5 (Current)**: Dual Delivery Center (GitHub Delivery & Secure ZIP Archive Export). ✅
 
 ---
 
@@ -56,6 +56,7 @@ An autonomous Streamlit Community Cloud AI Agent designed for robust multi-step 
 
 ---
 
-## 📦 Project Delivery Options
-- **Option A (GitHub delivery)**: Clean Git history, documentation, and precise commit/push commands.
-- **Option B (ZIP delivery)**: Clean ZIP archive excluding secrets (`.env`), caches, and virtual environments (`data/` database excluded from production export).
+## 📦 Phase 5: Dual Delivery Center
+- **Option A — GitHub Delivery**: Inspects local Git repository status (branch, remote, working tree status) and provides precise local Git workflow commands. Pushes and commits are never executed automatically.
+- **Option B — ZIP Archive Delivery**: Generates a clean production-ready ZIP archive on the fly (`st.download_button`) containing all source code and documentation while strictly excluding secrets (`.env`), database files (`data/`), caches (`__pycache__`), and virtual environments.
+- **Streamlit Community Cloud Limitation**: Local filesystem storage is ephemeral; users should download the portable ZIP copy as a reliable backup.

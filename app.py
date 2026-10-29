@@ -12,6 +12,7 @@ from workspace_tools import (
 from execution_engine import (
     get_next_eligible_step, execute_step, recover_interrupted_steps
 )
+from delivery_utils import get_git_status_info, generate_project_zip
 
 load_dotenv()
 init_db()
@@ -24,7 +25,7 @@ st.set_page_config(
 )
 
 st.title("🤖 LXNORO Super AI Agent 0-1")
-st.markdown("### Streamlit Community Cloud Edition — Phase 4: Execution & Recovery Engine")
+st.markdown("### Streamlit Community Cloud Edition — Phase 5: Dual Delivery Center")
 
 st.sidebar.header("Agent Configuration")
 api_key_input = st.sidebar.text_input("Gemini API Key", type="password", value=os.getenv("GEMINI_API_KEY", ""))
@@ -44,12 +45,12 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "➕ Create Task & Plan", 
     "🧠 Task Memory & Steps", 
     "🛠️ Safe Workspace Tools", 
-    "📦 Delivery Center"
+    "📦 Dual Delivery Center"
 ])
 
 with tab1:
     st.subheader("Welcome to LXNORO Super AI Agent 0-1")
-    st.info("Phase 4 active: Resumable execution engine, dependency validation, bounded retries, and deterministic tool actions operational.")
+    st.info("Phase 5 active: Dual Delivery Center operational (GitHub delivery guides & secure ZIP archive export).")
     
     tasks = get_tasks()
     st.markdown(f"### Active Tasks ({len(tasks)})")
@@ -73,15 +74,15 @@ with tab1:
         {"Phase": "Phase 1", "Focus": "Foundation, Streamlit App, Dependency Manifest, .gitignore, README", "Status": "Completed ✅"},
         {"Phase": "Phase 2", "Focus": "SQLite Persistent Task Memory & Dynamic 1–50 Step Plan Engine", "Status": "Completed ✅"},
         {"Phase": "Phase 3", "Focus": "Safe Workspace Tools (Inspection, File Editor, Search, Audit, Runner)", "Status": "Completed ✅"},
-        {"Phase": "Phase 4 (Current)", "Focus": "Execution & Recovery Engine (Resumable Steps, Retries, Validation)", "Status": "Completed ✅"},
-        {"Phase": "Phase 5", "Focus": "Dual Delivery Center (GitHub Delivery & ZIP Archive Export)", "Status": "Pending ⏳"}
+        {"Phase": "Phase 4", "Focus": "Execution & Recovery Engine (Resumable Steps, Retries, Validation)", "Status": "Completed ✅"},
+        {"Phase": "Phase 5 (Current)", "Focus": "Dual Delivery Center (GitHub Delivery & Secure ZIP Archive Export)", "Status": "Completed ✅"}
     ]
     st.table(roadmap_data)
 
 with tab2:
     st.subheader("Create a New Task & Dynamic Plan (1–50 Steps)")
     with st.form("task_form"):
-        goal_input = st.text_area("Task Goal / Objective", placeholder="e.g., Run automated diagnostics and validate workspace architecture")
+        goal_input = st.text_area("Task Goal / Objective", placeholder="e.g., Prepare complete project delivery package")
         step_count_input = st.slider("Plan Step Count", min_value=1, max_value=50, value=5)
         submit_task = st.form_submit_button("Generate Plan & Initialize Task")
         
@@ -243,14 +244,63 @@ with tab4:
                 st.error(output)
 
 with tab5:
-    st.subheader("Project Delivery Center")
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("#### Option A — GitHub Delivery")
-        st.markdown("Prepare for GitHub repository push with exact local git instructions.")
-        st.code("git init\ngit add .\ngit commit -m 'Initial commit: Phase 4 Execution Engine'\n# git remote add origin <url>\n# git push -u origin main", language="bash")
-    with col2:
-        st.markdown("#### Option B — ZIP Delivery")
-        st.markdown("Export cleaned project archive excluding secrets, temp files, and caches.")
-        if st.button("Generate ZIP Export Manifest"):
-            st.success("ZIP manifest ready. (Export functionality active in final phase). Note: SQLite database in `data/` and local temp files are excluded from ZIP production export as per ephemeral storage policy.")
+    st.subheader("📦 Dual Delivery Center")
+    st.markdown("Export or prepare your project for distribution via GitHub (Option A) or direct ZIP archive (Option B). Streamlit Community Cloud filesystems are ephemeral; download a ZIP archive as your persistent portable copy.")
+    
+    delivery_tab1, delivery_tab2 = st.tabs(["🐙 Option A — GitHub Delivery", "🗂️ Option B — ZIP Archive Delivery"])
+    
+    with delivery_tab1:
+        st.markdown("#### Option A — GitHub Repository Delivery")
+        st.markdown("Review your local repository status and use the exact commands below to commit and push your project to GitHub.")
+        
+        git_info = get_git_status_info()
+        st.markdown(f"- **Git Repository Detected:** `{'Yes ✅' if git_info['is_git_repo'] else 'No ❌'}`")
+        st.markdown(f"- **Current Branch:** `{git_info['branch']}`")
+        st.markdown(f"- **Remote URL:** `{git_info['remote']}`")
+        st.markdown(f"- **Working Tree Uncommitted Changes:** `{'Yes (Changes present) ⚠️' if git_info['uncommitted'] else 'Clean 🟢'}`")
+        
+        st.markdown("##### Working Tree Status Output")
+        st.code(git_info['status_output'], language="text")
+        
+        st.info("ℹ️ **Safety Guarantee**: Remote history, commits, and pushes are *never* executed automatically by this agent. You must run git commands locally.")
+        
+        st.markdown("##### Exact Local Git Workflow Commands")
+        st.code("""
+# 1. Initialize repository (if not already initialized)
+git init
+
+# 2. Check status and review changes safely
+git status
+git diff HEAD
+
+# 3. Stage selected files explicitly (avoiding secrets or local data)
+git add app.py agent_memory.py workspace_tools.py execution_engine.py delivery_utils.py requirements.txt .gitignore .env.example README.md test_*.py
+
+# 4. Commit changes with a descriptive message
+git commit -m "Complete LXNORO Super AI Agent 0-1 (Phases 1-5)"
+
+# 5. Connect remote repository and push (requires user authentication)
+# git remote add origin <your-github-repository-url>
+# git push -u origin main
+        """, language="bash")
+        
+    with delivery_tab2:
+        st.markdown("#### Option B — Secure ZIP Archive Delivery")
+        st.markdown("Generate and download a clean production ZIP archive containing all source code, manifests, and documentation while strictly excluding secrets (`.env`), database files (`data/`), caches, and virtual environments.")
+        
+        if st.button("Prepare Clean Project ZIP"):
+            zip_data = generate_project_zip()
+            st.session_state.zip_ready = True
+            st.session_state.zip_bytes = zip_data
+            st.success("ZIP archive prepared successfully!")
+            
+        if st.session_state.get("zip_ready", False):
+            st.download_button(
+                label="📥 Download LXNORO-Super-AI-Agent-0-1.zip",
+                data=st.session_state.zip_bytes,
+                file_name="LXNORO-Super-AI-Agent-0-1.zip",
+                mime="application/zip"
+            )
+            st.markdown("✅ **ZIP Generated Successfully** (Distinct from GitHub push status).")
+        else:
+            st.info("Click 'Prepare Clean Project ZIP' above to generate your download package.")
