@@ -60,6 +60,18 @@ def init_db():
             FOREIGN KEY (task_id) REFERENCES tasks (id) ON DELETE CASCADE
         )
     ''')
+
+    # Long-term memories table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS long_term_memories (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            category TEXT NOT NULL,
+            memory_key TEXT NOT NULL UNIQUE,
+            content TEXT NOT NULL,
+            importance INTEGER DEFAULT 1,
+            updated_at TEXT NOT NULL
+        )
+    ''')
     
     conn.commit()
     conn.close()
@@ -197,3 +209,123 @@ def get_memory_logs(task_id: int) -> List[Dict[str, Any]]:
     rows = cursor.fetchall()
     conn.close()
     return [dict(row) for row in rows]
+
+# ==========================================
+# Phase 8: Persistent Long-Term Memory & Context Intelligence
+# ==========================================
+
+def store_long_term_memory(category: str, memory_key: str, content: str, importance: int = 1) -> int:
+    """Store or update a persistent long-term memory record (handles deduplication/conflicts via memory_key upsert)."""
+    init_db()
+    now = datetime.utcnow().isoformat()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO long_term_memories (category, memory_key, content, importance, updated_at)
+        VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT(memory_key) DO UPDATE SET
+            category = excluded.category,
+            content = excluded.content,
+            importance = excluded.importance,
+            updated_at = excluded.updated_at
+    ''', (category, memory_key, content, importance, now))
+    conn.commit()
+    
+    cursor.execute("SELECT id FROM long_term_memories WHERE memory_key = ?", (memory_key,))
+    row = cursor.fetchone()
+    mem_id = row[0] if row else 0
+    conn.close()
+    return mem_id
+
+def get_long_term_memories(category: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Retrieve all long-term memories, optionally filtered by category."""
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    if category and category != "All":
+        cursor.execute("SELECT * FROM long_term_memories WHERE category = ? ORDER BY importance DESC, updated_at DESC", (category,))
+    else:
+        cursor.execute("SELECT * FROM long_term_memories ORDER BY importance DESC, updated_at DESC")
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
+
+def search_long_term_memories(query: str) -> List[Dict[str, Any]]:
+    """Search long-term memories using lightweight local relevance scoring (keyword overlap)."""
+    memories = get_long_term_memories()
+    if not query or not query.strip():
+        return memories
+        
+    query_terms = set(query.lower().split())
+    scored = []
+    for mem in memories:
+        text = f"{mem['memory_key']} {mem['content']} {mem['category']}".lower()
+        score = sum(1 for term in query_terms if term in text)
+        score += mem.get('importance', 1) * 0.5  # Weight by importance
+        if score > 0:
+            scored.append((score, mem))
+            
+    scored.sort(key=lambda x: x[0], reverse=True)
+    return [m for score, m in scored] if scored else memories
+
+def update_long_term_memory(memory_id: int, category: str, memory_key: str, content: str, importance: int) -> bool:
+    """Update a specific long-term memory record."""
+    init_db()
+    now = datetime.utcnow().isoformat()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    try:
+        cursor.execute('''
+            UPDATE long_term_memories 
+            SET category = ?, memory_key = ?, content = ?, importance = ?, updated_at = ?
+            WHERE id = ?
+        ''', (category, memory_key, content, importance, now, memory_id))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception:
+        conn.close()
+        return False
+
+def delete_long_term_memory(memory_id: int) -> bool:
+    """Delete a single long-term memory record by ID."""
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM long_term_memories WHERE id = ?", (memory_id,))
+    conn.commit()
+    conn.close()
+    return True
+
+def clear_long_term_memories() -> bool:
+    """Bulk delete all long-term memory records (requires explicit user confirmation)."""
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM long_term_memories")
+    conn.commit()
+    conn.close()
+    return True
+
+def get_relevant_memory_context(task_goal: str, max_chars: int = 1200) -> str:
+    """
+    Retrieve relevant long-term memories using local relevance scoring,
+    and format as a strict size-limited context injection block wrapped as data (protecting against prompt injection).
+    """
+    relevant = search_long_term_memories(task_goal)
+    if not relevant:
+        return ""
+        
+    lines = ["<long_term_memory_context>"]
+    curr_len = len(lines[0])
+    
+    for mem in relevant:
+        item_str = f"- [{mem['category']}] {mem['memory_key']}: {mem['content']} (Importance: {mem['importance']})"
+        if curr_len + len(item_str) + 1 > max_chars:
+            break
+        lines.append(item_str)
+        curr_len += len(item_str) + 1
+        
+    lines.append("</long_term_memory_context>")
+    return "\n".join(lines)

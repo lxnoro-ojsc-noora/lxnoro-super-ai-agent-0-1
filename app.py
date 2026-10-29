@@ -3,7 +3,11 @@ import streamlit as st
 from dotenv import load_dotenv
 from agent_memory import (
     init_db, create_task, get_tasks, get_task, 
-    get_steps, update_step_status, get_memory_logs
+    get_steps, update_step_status, get_memory_logs,
+    store_long_term_memory, get_long_term_memories,
+    search_long_term_memories, update_long_term_memory,
+    delete_long_term_memory, clear_long_term_memories,
+    get_relevant_memory_context
 )
 from workspace_tools import (
     list_workspace_files, read_text_file, write_workspace_file,
@@ -30,7 +34,7 @@ st.set_page_config(
 )
 
 st.title("🤖 LXNORO Super AI Agent 0-1")
-st.markdown("### Streamlit Community Cloud Edition — Phase 7: Autonomous Tool Orchestration")
+st.markdown("### Streamlit Community Cloud Edition — Phase 8: Persistent Long-Term Memory & Context Intelligence")
 
 st.sidebar.header("Agent Configuration")
 api_key_input = st.sidebar.text_input("Gemini API Key", type="password", value=os.getenv("GEMINI_API_KEY", ""))
@@ -51,19 +55,20 @@ if "active_task_id" not in st.session_state:
     st.session_state.active_task_id = None
 
 # Main interface tabs
-tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
     "🚀 Dashboard & Roadmap", 
     "➕ Create Task & Plan", 
     "🧠 Task Memory & Steps", 
     "🛠️ Safe Workspace Tools", 
     "📦 Dual Delivery Center",
     "⚡ Nebius & Nemotron",
-    "🎯 Tool Orchestration"
+    "🎯 Tool Orchestration",
+    "🧠 Long-Term Memory"
 ])
 
 with tab1:
     st.subheader("Welcome to LXNORO Super AI Agent 0-1")
-    st.info("Phase 7 active: Autonomous Tool Orchestration operational (Registry, schema validation, approval gates, and dynamic tool execution).")
+    st.info("Phase 8 active: Persistent Long-Term Memory & Context Intelligence operational (Categorization, relevance scoring, deduplication, and context injection).")
     
     tasks = get_tasks()
     st.markdown(f"### Active Tasks ({len(tasks)})")
@@ -90,7 +95,8 @@ with tab1:
         {"Phase": "Phase 4", "Focus": "Execution & Recovery Engine (Resumable Steps, Retries, Validation)", "Status": "Completed ✅"},
         {"Phase": "Phase 5", "Focus": "Dual Delivery Center (GitHub Delivery & Secure ZIP Archive Export)", "Status": "Completed ✅"},
         {"Phase": "Phase 6", "Focus": "Nebius Token Factory + NVIDIA Nemotron Integration (OpenAI-compatible API)", "Status": "Completed ✅"},
-        {"Phase": "Phase 7 (Current)", "Focus": "Autonomous Tool Orchestration (Registry, Schema Validation, Approval Gates)", "Status": "Completed ✅"}
+        {"Phase": "Phase 7", "Focus": "Autonomous Tool Orchestration (Registry, Schema Validation, Approval Gates)", "Status": "Completed ✅"},
+        {"Phase": "Phase 8 (Current)", "Focus": "Persistent Long-Term Memory & Context Intelligence (Curation, Relevance, Injection)", "Status": "Completed ✅"}
     ]
     st.table(roadmap_data)
 
