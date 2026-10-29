@@ -28,7 +28,8 @@ An autonomous Streamlit Community Cloud AI Agent designed for robust multi-step 
 - **Phase 3**: Safe Workspace Tools (Inspection, File Editor, Search, Audit, Strict Command Runner). ✅
 - **Phase 4**: Execution & Recovery Engine (Resumable Steps, Retries, Validation). ✅
 - **Phase 5**: Dual Delivery Center (GitHub Delivery & Secure ZIP Archive Export). ✅
-- **Phase 6 (Current)**: Nebius Token Factory + NVIDIA Nemotron Integration (OpenAI-compatible API, Chat Completions, Playground, Mocked Tests). ✅
+- **Phase 6**: Nebius Token Factory + NVIDIA Nemotron Integration (OpenAI-compatible API, Chat Completions, Playground, Mocked Tests). ✅
+- **Phase 7 (Current)**: Autonomous Tool Orchestration (Tool Registry & Schemas, Capability Selector, Schema Validation, Approval Gates, Executable Orchestration Playground, Mocked Tests). ✅
 
 ---
 
@@ -70,3 +71,12 @@ An autonomous Streamlit Community Cloud AI Agent designed for robust multi-step 
 - **Configurable Model**: Defaults to `nvidia/nemotron-3-super-120b-a12b`, configurable via `NEBIUS_MODEL`.
 - **Interactive Playground**: Integrated into the Streamlit workflow (`⚡ Nebius & Nemotron` tab and sidebar status) for prompt testing and raw JSON response inspection.
 - **Mocked Testing**: Fully tested using offline unit tests (`test_nebius_client.py`) covering success, missing credentials, HTTP errors, timeouts, and malformed responses.
+
+---
+
+## 🎯 Phase 7: Autonomous Tool Orchestration
+- **Tool Registry & Capability Matching**: Centralized registry of workspace and AI tools with structured parameters and sensitivity metadata. Intelligent selector matches tools against user task goals.
+- **Strict Schema & Security Validation**: Validates tool names, parameter types, and required fields before execution. Integrates with existing workspace security checks (`is_safe_path`, allowlisted commands).
+- **Mandatory Approval Gates**: Enforces explicit user approval (`approval_granted: bool`) before executing sensitive operations (destructive file changes, shell commands, or external network requests).
+- **Streamlit Orchestration Playground**: Dedicated `"🎯 Tool Orchestration"` tab providing a tool catalog, task capability selector, and interactive execution playground with real-time feedback.
+- **Mocked Testing**: Comprehensive unit tests (`test_orchestration.py`) verifying tool selection, parameter validation, approval gating, and execution error handling.
