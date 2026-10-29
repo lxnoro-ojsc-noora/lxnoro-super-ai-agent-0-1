@@ -13,6 +13,7 @@ from execution_engine import (
     get_next_eligible_step, execute_step, recover_interrupted_steps
 )
 from delivery_utils import get_git_status_info, generate_project_zip
+from nebius_client import nebius_chat_completion, get_nebius_api_key, get_nebius_model, NEBIUS_BASE_URL
 
 load_dotenv()
 init_db()
@@ -25,10 +26,16 @@ st.set_page_config(
 )
 
 st.title("🤖 LXNORO Super AI Agent 0-1")
-st.markdown("### Streamlit Community Cloud Edition — Phase 5: Dual Delivery Center")
+st.markdown("### Streamlit Community Cloud Edition — Phase 6: Nebius Token Factory + NVIDIA Nemotron Integration")
 
 st.sidebar.header("Agent Configuration")
 api_key_input = st.sidebar.text_input("Gemini API Key", type="password", value=os.getenv("GEMINI_API_KEY", ""))
+
+st.sidebar.markdown("---")
+st.sidebar.subheader("Nebius Token Factory")
+nebius_key_status = "🟢 Configured" if get_nebius_api_key() else "🔴 Missing"
+st.sidebar.markdown(f"- **API Key:** {nebius_key_status}")
+st.sidebar.markdown(f"- **Model:** `{get_nebius_model()}`")
 
 st.sidebar.markdown("---")
 st.sidebar.subheader("Project Delivery Options")
@@ -40,17 +47,18 @@ if "active_task_id" not in st.session_state:
     st.session_state.active_task_id = None
 
 # Main interface tabs
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "🚀 Dashboard & Roadmap", 
     "➕ Create Task & Plan", 
     "🧠 Task Memory & Steps", 
     "🛠️ Safe Workspace Tools", 
-    "📦 Dual Delivery Center"
+    "📦 Dual Delivery Center",
+    "⚡ Nebius & Nemotron"
 ])
 
 with tab1:
     st.subheader("Welcome to LXNORO Super AI Agent 0-1")
-    st.info("Phase 5 active: Dual Delivery Center operational (GitHub delivery guides & secure ZIP archive export).")
+    st.info("Phase 6 active: Nebius Token Factory + NVIDIA Nemotron integration operational (OpenAI-compatible API chat completions & playground).")
     
     tasks = get_tasks()
     st.markdown(f"### Active Tasks ({len(tasks)})")
@@ -75,7 +83,8 @@ with tab1:
         {"Phase": "Phase 2", "Focus": "SQLite Persistent Task Memory & Dynamic 1–50 Step Plan Engine", "Status": "Completed ✅"},
         {"Phase": "Phase 3", "Focus": "Safe Workspace Tools (Inspection, File Editor, Search, Audit, Runner)", "Status": "Completed ✅"},
         {"Phase": "Phase 4", "Focus": "Execution & Recovery Engine (Resumable Steps, Retries, Validation)", "Status": "Completed ✅"},
-        {"Phase": "Phase 5 (Current)", "Focus": "Dual Delivery Center (GitHub Delivery & Secure ZIP Archive Export)", "Status": "Completed ✅"}
+        {"Phase": "Phase 5", "Focus": "Dual Delivery Center (GitHub Delivery & Secure ZIP Archive Export)", "Status": "Completed ✅"},
+        {"Phase": "Phase 6 (Current)", "Focus": "Nebius Token Factory + NVIDIA Nemotron Integration (OpenAI-compatible API)", "Status": "Completed ✅"}
     ]
     st.table(roadmap_data)
 
@@ -274,10 +283,10 @@ git status
 git diff HEAD
 
 # 3. Stage selected files explicitly (avoiding secrets or local data)
-git add app.py agent_memory.py workspace_tools.py execution_engine.py delivery_utils.py requirements.txt .gitignore .env.example README.md test_*.py
+git add app.py agent_memory.py workspace_tools.py execution_engine.py delivery_utils.py nebius_client.py requirements.txt .gitignore .env.example README.md test_*.py
 
 # 4. Commit changes with a descriptive message
-git commit -m "Complete LXNORO Super AI Agent 0-1 (Phases 1-5)"
+git commit -m "Implement Phase 6: Nebius Token Factory + NVIDIA Nemotron integration"
 
 # 5. Connect remote repository and push (requires user authentication)
 # git remote add origin <your-github-repository-url>
@@ -304,3 +313,43 @@ git commit -m "Complete LXNORO Super AI Agent 0-1 (Phases 1-5)"
             st.markdown("✅ **ZIP Generated Successfully** (Distinct from GitHub push status).")
         else:
             st.info("Click 'Prepare Clean Project ZIP' above to generate your download package.")
+
+with tab6:
+    st.subheader("⚡ Nebius Token Factory + NVIDIA Nemotron Integration")
+    st.markdown("Interact with NVIDIA Nemotron via the OpenAI-compatible Nebius Token Factory API (`https://api.tokenfactory.nebius.com/v1/`).")
+    
+    st.markdown("##### Configuration Status")
+    col_nc1, col_nc2 = st.columns(2)
+    with col_nc1:
+        st.markdown(f"- **Base URL:** `{NEBIUS_BASE_URL}`")
+        st.markdown(f"- **Configured Model (`NEBIUS_MODEL`):** `{get_nebius_model()}`")
+    with col_nc2:
+        api_key_present = bool(get_nebius_api_key())
+        st.markdown(f"- **API Key Status (`NEBIUS_API_KEY`):** `{'Configured 🟢' if api_key_present else 'Missing 🔴'}`")
+        if not api_key_present:
+            st.warning("⚠️ `NEBIUS_API_KEY` is not set in environment. Set it in `.env` or environment variables to enable live requests.")
+            
+    st.markdown("---")
+    st.markdown("##### Nebius Chat Completion Playground")
+    st.info("ℹ️ Note: Live Nebius connectivity remains unverified unless tested with valid credentials. You can test error handling or mocked execution safely.")
+    
+    user_prompt = st.text_area("Prompt for NVIDIA Nemotron", placeholder="e.g., Explain the architecture of LXNORO Super AI Agent in 3 sentences.", value="Hello, NVIDIA Nemotron!")
+    
+    col_btn1, col_btn2 = st.columns([1, 4])
+    with col_btn1:
+        send_nebius = st.button("Send to Nebius API")
+        
+    if send_nebius:
+        if not user_prompt.strip():
+            st.error("Please enter a prompt.")
+        else:
+            with st.spinner("Communicating with Nebius Token Factory..."):
+                res = nebius_chat_completion(user_prompt.strip())
+                if res["success"]:
+                    st.success("Response received successfully from Nebius API!")
+                    st.markdown("**Assistant Response:**")
+                    st.markdown(res["content"])
+                    with st.expander("Inspect Raw JSON Response"):
+                        st.json(res["raw"])
+                else:
+                    st.error(f"Nebius API Error: {res['error']}")

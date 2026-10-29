@@ -27,7 +27,8 @@ An autonomous Streamlit Community Cloud AI Agent designed for robust multi-step 
 - **Phase 2**: SQLite Persistent Task Memory & Dynamic 1–50 Step Plan Engine. ✅
 - **Phase 3**: Safe Workspace Tools (Inspection, File Editor, Search, Audit, Strict Command Runner). ✅
 - **Phase 4**: Execution & Recovery Engine (Resumable Steps, Retries, Validation). ✅
-- **Phase 5 (Current)**: Dual Delivery Center (GitHub Delivery & Secure ZIP Archive Export). ✅
+- **Phase 5**: Dual Delivery Center (GitHub Delivery & Secure ZIP Archive Export). ✅
+- **Phase 6 (Current)**: Nebius Token Factory + NVIDIA Nemotron Integration (OpenAI-compatible API, Chat Completions, Playground, Mocked Tests). ✅
 
 ---
 
@@ -60,3 +61,12 @@ An autonomous Streamlit Community Cloud AI Agent designed for robust multi-step 
 - **Option A — GitHub Delivery**: Inspects local Git repository status (branch, remote, working tree status) and provides precise local Git workflow commands. Pushes and commits are never executed automatically.
 - **Option B — ZIP Archive Delivery**: Generates a clean production-ready ZIP archive on the fly (`st.download_button`) containing all source code and documentation while strictly excluding secrets (`.env`), database files (`data/`), caches (`__pycache__`), and virtual environments.
 - **Streamlit Community Cloud Limitation**: Local filesystem storage is ephemeral; users should download the portable ZIP copy as a reliable backup.
+
+---
+
+## ⚡ Phase 6: Nebius Token Factory + NVIDIA Nemotron Integration
+- **OpenAI-Compatible API Client**: Connects to Nebius Token Factory (`https://api.tokenfactory.nebius.com/v1/`) supporting chat completions.
+- **Secure Credential Handling**: Reads API keys exclusively from `NEBIUS_API_KEY` with strict error handling, ensuring keys are never logged or exposed in errors/UI.
+- **Configurable Model**: Defaults to `nvidia/nemotron-3-super-120b-a12b`, configurable via `NEBIUS_MODEL`.
+- **Interactive Playground**: Integrated into the Streamlit workflow (`⚡ Nebius & Nemotron` tab and sidebar status) for prompt testing and raw JSON response inspection.
+- **Mocked Testing**: Fully tested using offline unit tests (`test_nebius_client.py`) covering success, missing credentials, HTTP errors, timeouts, and malformed responses.
