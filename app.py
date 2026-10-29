@@ -33,75 +33,121 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom Cyberpunk / Video-Game Inspired Tactical Theme CSS
+# Comprehensive High-Contrast Cyberpunk / Video-Game Tactical Theme CSS
 st.markdown("""
 <style>
-/* Global Theme: Pure Black & Very Dark Purple Gamer Aesthetic */
+/* Global Theme: Near-Black Background with High-Contrast Pure White Typography */
 .stApp {
-    background-color: #0b0b0c;
-    color: #ffffff;
+    background-color: #07050b !important;
+    color: #ffffff !important;
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 [data-testid="stSidebar"] {
-    background-color: #050507;
-    border-right: 1px solid #1a0f24;
+    background-color: #040208 !important;
+    border-right: 1px solid #1c0f2e !important;
 }
 [data-testid="stHeader"] {
-    background-color: rgba(11, 11, 12, 0.9);
+    background-color: rgba(7, 5, 11, 0.95) !important;
 }
-/* Cards & Containers */
-div.stMarkdown, div.stExpander, div.stForm {
-    background-color: #121217;
-    border: 1px solid #1f132e;
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1rem;
+
+/* Force all text elements, markdown, labels, headers, spans to be bright white */
+h1, h2, h3, h4, h5, h6, p, span, label, div, .stMarkdown, .stText, stMarkdown p {
+    color: #ffffff !important;
 }
-/* Buttons */
+
+/* HUD Panels & Cards */
+div.stMarkdown, div.stExpander, div.stForm, div[data-testid="stVerticalBlock"] > div {
+    background-color: #11091d !important;
+    border: 1px solid #2b144a !important;
+    border-radius: 8px !important;
+    padding: 1rem !important;
+    margin-bottom: 1rem !important;
+    color: #ffffff !important;
+}
+
+/* Buttons - Futuristic Gamer Command Style */
 .stButton>button {
-    background: linear-gradient(135deg, #2d1338 0%, #150922 100%);
-    color: #ffffff;
-    border: 1px solid #4a1d63;
-    border-radius: 6px;
-    font-weight: 600;
-    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #2c144a 0%, #130a21 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid #7b2cbf !important;
+    border-radius: 6px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+    transition: all 0.3s ease !important;
 }
 .stButton>button:hover {
-    background: linear-gradient(135deg, #4a1d63 0%, #2d1338 100%);
-    border-color: #8a2be2;
-    box-shadow: 0 0 12px rgba(138, 43, 226, 0.4);
-}
-/* Inputs & Textareas */
-input, textarea, select {
-    background-color: #0f0f14 !important;
+    background: linear-gradient(135deg, #7b2cbf 0%, #2c144a 100%) !important;
+    border-color: #c084fc !important;
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.5) !important;
     color: #ffffff !important;
-    border: 1px solid #221233 !important;
+}
+
+/* Input fields, text areas, select boxes */
+input, textarea, select, div[data-baseweb="select"] > div, div[data-baseweb="input"] > div {
+    background-color: #0b0514 !important;
+    color: #ffffff !important;
+    border: 1px solid #3b1d63 !important;
     border-radius: 6px !important;
 }
-/* Headers & Titles */
-h1, h2, h3, h4, h5, h6 {
-    color: #ffffff !important;
-    font-weight: 700;
-    letter-spacing: 0.5px;
+input::placeholder, textarea::placeholder {
+    color: #a0a0b8 !important;
 }
+.stTextInput input, .stTextArea textarea {
+    color: #ffffff !important;
+}
+div[data-baseweb="select"] span, div[data-baseweb="select"] div, div[data-baseweb="select"] svg {
+    color: #ffffff !important;
+    fill: #ffffff !important;
+}
+
+/* Radio & Checkbox labels */
+.stRadio label, .stCheckbox label {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+
+/* Tables & Dataframes */
+table {
+    background-color: #11091d !important;
+    color: #ffffff !important;
+}
+th {
+    background-color: #1f0f35 !important;
+    color: #ffffff !important;
+    font-weight: bold !important;
+}
+td {
+    color: #f3f4f6 !important;
+    border-bottom: 1px solid #2b144a !important;
+}
+
+/* Status Alerts & Info boxes */
+.stAlert {
+    background-color: #11091d !important;
+    color: #ffffff !important;
+    border: 1px solid #581c87 !important;
+}
+
+/* Branding Header */
 .brand-container {
-    padding: 0.5rem 0 1rem 0;
-    border-bottom: 1px solid #1f132e;
+    padding: 0.75rem 0 1rem 0;
+    border-bottom: 1px solid #2b144a;
     margin-bottom: 1rem;
 }
 .brand-title {
-    font-size: 1.15rem;
+    font-size: 1.25rem;
     font-weight: 900;
-    color: #bd00ff;
+    color: #d8b4fe;
     text-transform: uppercase;
-    letter-spacing: 1.5px;
+    letter-spacing: 2px;
     margin: 0;
+    text-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
 }
 .brand-subtitle {
     font-size: 0.75rem;
-    color: #8c8c9e;
-    margin-top: 0.2rem;
-    letter-spacing: 0.5px;
+    color: #c084fc;
+    margin-top: 0.3rem;
+    letter-spacing: 1px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -144,8 +190,8 @@ with st.sidebar:
 # Main Header Banner
 st.markdown("""
     <div style="padding: 0.5rem 0 1rem 0;">
-        <h1 style="margin-bottom: 0px; font-size: 2rem;">🤖 LXNORO SUPER AI AGENT</h1>
-        <p style="color: #a0a0b0; font-size: 0.95rem; margin-top: 4px;">Autonomous Multi-Modal Engineering & Orchestration Engine — Streamlit Community Cloud Edition</p>
+        <h1 style="margin-bottom: 0px; font-size: 2rem; color: #ffffff;">🤖 LXNORO SUPER AI AGENT</h1>
+        <p style="color: #e2e8f0; font-size: 0.95rem; margin-top: 4px;">Autonomous Multi-Modal Engineering & Orchestration Engine — Streamlit Community Cloud Edition</p>
     </div>
 """, unsafe_allow_html=True)
 
@@ -386,7 +432,7 @@ git diff HEAD
 git add app.py agent_memory.py workspace_tools.py execution_engine.py delivery_utils.py nebius_client.py orchestration_engine.py requirements.txt .gitignore .env.example README.md test_*.py
 
 # 4. Commit changes with a descriptive message
-git commit -m "Implement Phase 8 & UI Polish"
+git commit -m "Implement Phase 8 & High-Contrast UI Polish"
 
 # 5. Connect remote repository and push (requires user authentication)
 # git remote add origin <your-github-repository-url>
