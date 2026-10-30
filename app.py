@@ -222,6 +222,9 @@ if "chat_history" not in st.session_state:
 if "nav_sector" not in st.session_state:
     st.session_state.nav_sector = "💬 Conversational AI & Pipeline"
 
+if "chat_input_version" not in st.session_state:
+    st.session_state.chat_input_version = 0
+
 # Sidebar Cyber Command Telemetry & Navigation
 with st.sidebar:
     st.markdown("""
@@ -316,7 +319,8 @@ if "Conversational AI" in nav_mode:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
             
-    user_message = st.chat_input("Describe your software project or requirement in natural language...", key="main_chat_input")
+    chat_input_key = f"main_chat_input_{st.session_state.chat_input_version}"
+    user_message = st.chat_input("Describe your software project or requirement in natural language...", key=chat_input_key)
     if user_message:
         st.session_state.chat_history.append({"role": "user", "content": user_message})
         with st.chat_message("user"):
@@ -336,9 +340,8 @@ if "Conversational AI" in nav_mode:
                         reply = f"⚠️ **Nebius API Error:** {resp.get('error')}"
                 st.markdown(reply)
                 st.session_state.chat_history.append({"role": "assistant", "content": reply})
-                # Clear chat input state upon successful submission/entry
-                if "main_chat_input" in st.session_state:
-                    st.session_state["main_chat_input"] = ""
+                # Safely reset chat input widget by incrementing its version key (preventing StreamlitWidgetAlreadyInstantiatedError)
+                st.session_state.chat_input_version += 1
                 st.rerun()
 
     st.markdown("---")
@@ -504,7 +507,6 @@ elif "View & Use Application" in nav_mode:
                 st.markdown(f"- **Accessible URL:** [{preview_url}]({preview_url})")
                 st.info("The application runtime is active locally. Below is the native React/DOM error-free interactive application preview sandbox:")
                 
-                # Render using robust native HTML container instead of st.components.v1.iframe to prevent React removeChild DOM exceptions
                 task_obj = get_task(st.session_state.active_task_id)
                 goal_name = task_obj['goal'] if task_obj else "Autonomous Project"
                 st.markdown(f"""
@@ -548,7 +550,6 @@ elif "Continuous In-Place" in nav_mode:
                         success, msg, changed = modify_project(task['id'], mod_prompt.strip())
                     if success:
                         st.success(f"{msg} Modified files: {', '.join(changed)}")
-                        st.session_state["continuous_mod_input"] = ""
                         st.rerun()
                     else:
                         st.error(msg)
@@ -584,9 +585,6 @@ elif "Delivery & Export" in nav_mode:
                             pub_res = publish_to_github(gh_repo.strip(), gh_token.strip(), gh_commit.strip())
                         if pub_res["success"]:
                             st.success(f"Successfully published {pub_res['pushed_count']} files to GitHub repository `{gh_repo.strip()}`!")
-                            st.session_state["gh_repo_input"] = ""
-                            st.session_state["gh_token_input"] = ""
-                            st.session_state["gh_commit_input"] = "LXNORO Autonomous Agent Delivery"
                         else:
                             st.error(f"GitHub publishing failed: {pub_res.get('error') or pub_res.get('errors')}")
                     else:
