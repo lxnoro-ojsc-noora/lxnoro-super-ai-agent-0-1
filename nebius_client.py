@@ -10,7 +10,7 @@ SUPPORTED_MODELS = {
 }
 
 def get_nebius_api_key() -> str:
-    """Read the API key exclusively from server-side st.secrets or environment variables."""
+    """Read the API key directly from server-side st.secrets or environment variables without modifying secrets."""
     try:
         import streamlit as st
         if hasattr(st, "secrets") and "NEBIUS_API_KEY" in st.secrets:
@@ -20,9 +20,11 @@ def get_nebius_api_key() -> str:
     return os.getenv("NEBIUS_API_KEY", "").strip()
 
 def get_nebius_model() -> str:
-    """Get the configured Nebius model from st.secrets or environment, falling back to default NVIDIA Nemotron model."""
+    """Get the configured Nebius model from session state, st.secrets, or environment."""
     try:
         import streamlit as st
+        if hasattr(st, "session_state") and "nebius_selected_model" in st.session_state:
+            return str(st.session_state["nebius_selected_model"]).strip()
         if hasattr(st, "secrets") and "NEBIUS_MODEL" in st.secrets:
             return str(st.secrets["NEBIUS_MODEL"]).strip()
     except Exception:
@@ -37,7 +39,7 @@ def nebius_chat_completion(prompt: str, model: Optional[str] = None, timeout: in
     
     Args:
         prompt: The user prompt string.
-        model: Optional model override (e.g. 'nvidia/nemotron-3-super-120b-a12b' or 'deepseek/deepseek-v4.1-flash-1017').
+        model: Optional model override ('nvidia/nemotron-3-super-120b-a12b' or 'deepseek/deepseek-v4.1-flash-1017').
         timeout: Request timeout in seconds (default 60).
         system_prompt: Optional system prompt to guide model behavior.
         
@@ -52,7 +54,7 @@ def nebius_chat_completion(prompt: str, model: Optional[str] = None, timeout: in
     if not api_key:
         return {
             "success": False,
-            "error": "Nebius API key is missing. Please configure NEBIUS_API_KEY in environment or Streamlit secrets."
+            "error": "Nebius API key is missing. Please configure NEBIUS_API_KEY in Streamlit Secrets or environment variables."
         }
         
     target_model = model or get_nebius_model()
@@ -106,7 +108,7 @@ def nebius_chat_completion(prompt: str, model: Optional[str] = None, timeout: in
     except requests.exceptions.Timeout:
         return {
             "success": False,
-            "error": "Nebius API request timed out after {timeout}s."
+            "error": f"Nebius API request timed out after {timeout}s."
         }
     except requests.exceptions.RequestException as e:
         return {
