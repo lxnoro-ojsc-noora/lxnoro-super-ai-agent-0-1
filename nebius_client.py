@@ -4,6 +4,10 @@ from typing import Dict, Any, Optional
 
 NEBIUS_BASE_URL = "https://api.tokenfactory.nebius.com/v1"
 DEFAULT_NEBIUS_MODEL = "nvidia/nemotron-3-super-120b-a12b"
+SUPPORTED_MODELS = {
+    "NVIDIA Nemotron 3 Super 120B": "nvidia/nemotron-3-super-120b-a12b",
+    "DeepSeek V4.1 Flash 1017": "deepseek/deepseek-v4.1-flash-1017"
+}
 
 def get_nebius_api_key() -> str:
     """Read the API key exclusively from server-side st.secrets or environment variables."""
@@ -25,14 +29,17 @@ def get_nebius_model() -> str:
         pass
     return os.getenv("NEBIUS_MODEL", DEFAULT_NEBIUS_MODEL).strip()
 
-def nebius_chat_completion(prompt: str, model: Optional[str] = None, timeout: int = 30) -> Dict[str, Any]:
+def nebius_chat_completion(prompt: str, model: Optional[str] = None, timeout: int = 60, system_prompt: Optional[str] = None) -> Dict[str, Any]:
     """
-    Send a chat completion request to Nebius Token Factory using OpenAI-compatible API.
+    Send a real chat completion request to Nebius Token Factory using OpenAI-compatible API.
+    Supports both NVIDIA Nemotron and DeepSeek V4.1 Flash 1017 models.
+    No mock or simulated paths.
     
     Args:
         prompt: The user prompt string.
-        model: Optional model override. Defaults to NEBIUS_MODEL or nvidia/nemotron-3-super-120b-a12b.
-        timeout: Request timeout in seconds (default 30).
+        model: Optional model override (e.g. 'nvidia/nemotron-3-super-120b-a12b' or 'deepseek/deepseek-v4.1-flash-1017').
+        timeout: Request timeout in seconds (default 60).
+        system_prompt: Optional system prompt to guide model behavior.
         
     Returns:
         Dict with keys:
@@ -45,7 +52,7 @@ def nebius_chat_completion(prompt: str, model: Optional[str] = None, timeout: in
     if not api_key:
         return {
             "success": False,
-            "error": "Nebius API key is missing. Please set the NEBIUS_API_KEY environment variable."
+            "error": "Nebius API key is missing. Please configure NEBIUS_API_KEY in environment or Streamlit secrets."
         }
         
     target_model = model or get_nebius_model()
@@ -56,21 +63,26 @@ def nebius_chat_completion(prompt: str, model: Optional[str] = None, timeout: in
         "Content-Type": "application/json"
     }
     
+    messages = []
+    if system_prompt:
+        messages.append({"role": "system", "content": system_prompt})
+    messages.append({"role": "user", "content": prompt})
+    
     payload = {
         "model": target_model,
-        "messages": [
-            {"role": "user", "content": prompt}
-        ]
+        "messages": messages,
+        "temperature": 0.2,
+        "max_tokens": 4096
     }
     
     try:
         response = requests.post(url, headers=headers, json=payload, timeout=timeout)
         
         if response.status_code != 200:
-            # Safely log status code without leaking API key or headers
+            error_detail = response.text[:300] if response.text else "No error details"
             return {
                 "success": False,
-                "error": f"Nebius API error (HTTP {response.status_code}): Request failed."
+                "error": f"Nebius API error (HTTP {response.status_code}): {error_detail}"
             }
             
         data = response.json()
@@ -94,15 +106,15 @@ def nebius_chat_completion(prompt: str, model: Optional[str] = None, timeout: in
     except requests.exceptions.Timeout:
         return {
             "success": False,
-            "error": "Nebius API request timed out."
+            "error": "Nebius API request timed out after {timeout}s."
         }
-    except requests.exceptions.RequestException:
+    except requests.exceptions.RequestException as e:
         return {
             "success": False,
-            "error": "Nebius API network error occurred."
+            "error": f"Nebius API network error: {str(e)}"
         }
-    except Exception:
+    except Exception as e:
         return {
             "success": False,
-            "error": "An unexpected error occurred while communicating with Nebius API."
+            "error": f"Unexpected error during Nebius API call: {str(e)}"
         }

@@ -19,7 +19,7 @@ from execution_engine import (
     get_next_eligible_step, execute_step, recover_interrupted_steps
 )
 from delivery_utils import get_git_status_info, generate_project_zip, publish_to_github
-from nebius_client import get_nebius_api_key, get_nebius_model, nebius_chat_completion
+from nebius_client import get_nebius_api_key, get_nebius_model, nebius_chat_completion, SUPPORTED_MODELS
 
 load_dotenv()
 init_db()
@@ -31,7 +31,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# High-End Futuristic Cybersecurity Gaming Command Center Theme CSS
+# High-End Futuristic Cybersecurity Gaming Command Center Theme CSS (Fixing all input/comment text colors & contrast)
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Share+Tech+Mono&family=Rajdhani:wght@500;700&family=Inter:wght@400;500;600&display=swap');
@@ -105,9 +105,11 @@ div.stExpander, div.stForm, div[data-testid="stVerticalBlock"] > div {
     color: #ffffff !important;
     transform: translateY(-1px);
 }
-input, textarea, select, div[data-baseweb="select"] > div, div[data-baseweb="input"] > div {
+/* Explicitly fix all input fields, textareas, comment boxes, and select controls to prevent black text */
+input, textarea, select, div[data-baseweb="select"] > div, div[data-baseweb="input"] > div, .stTextInput input, .stTextArea textarea, textarea.stTextArea {
     background-color: #030712 !important;
     color: #f8fafc !important;
+    -webkit-text-fill-color: #f8fafc !important;
     border: 1px solid rgba(6, 182, 212, 0.3) !important;
     border-radius: 6px !important;
     font-family: 'Share Tech Mono', monospace !important;
@@ -115,12 +117,12 @@ input, textarea, select, div[data-baseweb="select"] > div, div[data-baseweb="inp
 input:focus, textarea:focus {
     border-color: #06b6d4 !important;
     box-shadow: 0 0 15px rgba(6, 182, 212, 0.4) !important;
+    color: #f8fafc !important;
+    -webkit-text-fill-color: #f8fafc !important;
 }
 input::placeholder, textarea::placeholder {
-    color: #475569 !important;
-}
-.stTextInput input, .stTextArea textarea {
-    color: #f8fafc !important;
+    color: #94a3b8 !important;
+    -webkit-text-fill-color: #94a3b8 !important;
 }
 div[data-baseweb="select"] span, div[data-baseweb="select"] div, div[data-baseweb="select"] svg {
     color: #f8fafc !important;
@@ -177,6 +179,7 @@ td {
 [data-testid="stChatInput"] textarea {
     background-color: #030712 !important;
     color: #f8fafc !important;
+    -webkit-text-fill-color: #f8fafc !important;
     font-family: 'Share Tech Mono', monospace !important;
 }
 [data-testid="stChatMessage"] {
@@ -206,7 +209,7 @@ td {
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize session state
+# Initialize session state cleanly without key conflict exceptions
 if "active_task_id" not in st.session_state:
     tasks = get_tasks()
     st.session_state.active_task_id = tasks[0]["id"] if tasks else None
@@ -215,6 +218,9 @@ if "chat_history" not in st.session_state:
     st.session_state.chat_history = [
         {"role": "assistant", "content": "🛡️ LXNORO Cyber Command HUD online. Describe the software application or website you wish to build in natural language."}
     ]
+
+if "nav_sector" not in st.session_state:
+    st.session_state.nav_sector = "💬 Conversational AI & Pipeline"
 
 # Sidebar Cyber Command Telemetry & Navigation
 with st.sidebar:
@@ -243,26 +249,54 @@ with st.sidebar:
         st.markdown("*No active operations.*")
 
     st.markdown("---")
-    st.markdown("### 📡 SYSTEM TELEMETRY")
+    st.markdown("### 📡 SYSTEM & MODEL TELEMETRY")
     api_key_configured = bool(get_nebius_api_key())
-    core_status = "🟢 SECURE (LIVE AI)" if api_key_configured else "⚡ SECURE (LOCAL FALLBACK)"
+    core_status = "🟢 SECURE (NEBIUS LIVE API)" if api_key_configured else "⚡ SECURE (LOCAL MODE)"
     st.markdown(f"- **AI Core:** {core_status}")
-    st.markdown(f"- **Model:** `{get_nebius_model()}`")
+    
+    # Model selection dropdown for both NVIDIA Nemotron and DeepSeek V4.1 Flash 1017
+    model_labels = list(SUPPORTED_MODELS.keys())
+    current_model_id = get_nebius_model()
+    current_model_label = next((k for k, v in SUPPORTED_MODELS.items() if v == current_model_id), model_labels[0])
+    
+    selected_model_label = st.selectbox(
+        "Nebius AI Model",
+        options=model_labels,
+        index=model_labels.index(current_model_label) if current_model_label in model_labels else 0,
+        key="model_selectbox"
+    )
+    selected_model_id = SUPPORTED_MODELS[selected_model_label]
+    if selected_model_id != current_model_id:
+        os.environ["NEBIUS_MODEL"] = selected_model_id
+        try:
+            st.secrets["NEBIUS_MODEL"] = selected_model_id
+        except Exception:
+            pass
+        st.rerun()
+
     st.markdown(f"- **Database:** `data/agent_memory.db`")
 
     st.markdown("---")
     st.markdown("### 🧭 COMMAND SECTORS")
-    nav_mode = st.radio(
+    
+    sectors = [
+        "💬 Conversational AI & Pipeline",
+        "👁️ View Code (Source Inspector)",
+        "🖥️ View & Use Application (Runtime)",
+        "🔄 Continuous In-Place Modification",
+        "📦 Delivery & Export Center"
+    ]
+    
+    current_index = sectors.index(st.session_state.nav_sector) if st.session_state.nav_sector in sectors else 0
+    selected_sector = st.radio(
         "Navigation Sector",
-        [
-            "💬 Conversational AI & Pipeline",
-            "👁️ View Code (Source Inspector)",
-            "🖥️ View & Use Application (Runtime)",
-            "🔄 Continuous In-Place Modification",
-            "📦 Delivery & Export Center"
-        ],
-        key="cyber_command_nav"
+        sectors,
+        index=current_index,
+        key="cyber_command_radio"
     )
+    if selected_sector != st.session_state.nav_sector:
+        st.session_state.nav_sector = selected_sector
+        st.rerun()
 
 # Main Cyber Command Banner HUD
 st.markdown("""
@@ -271,6 +305,8 @@ st.markdown("""
         <p style="color: #38bdf8; font-size: 0.85rem; margin-top: 6px; font-family: 'Share Tech Mono', monospace; letter-spacing: 1.5px;">AUTONOMOUS SOFTWARE ENGINEERING & INTELLIGENCE OPERATIONS CENTER</p>
     </div>
 """, unsafe_allow_html=True)
+
+nav_mode = st.session_state.nav_sector
 
 # -------------------------------------------------------------
 # SECTOR 1: Conversational AI & Autonomous Pipeline
@@ -294,7 +330,7 @@ if "Conversational AI" in nav_mode:
                 if "build" in user_message.lower() or "create" in user_message.lower() or "app" in user_message.lower() or "system" in user_message.lower() or len(get_tasks()) == 0:
                     new_id = create_task(user_message, step_count=5)
                     st.session_state.active_task_id = new_id
-                    reply = f"🚀 **Operation #{new_id} Initialized!** Autonomous execution plan generated. Switch to the execution console below or continue chatting to modify the build."
+                    reply = f"🚀 **Operation #{new_id} Initialized!** Autonomous execution plan generated via Nebius AI (`{get_nebius_model()}`). Switch to the execution console below or continue chatting to modify the build."
                 else:
                     resp = nebius_chat_completion(f"You are LXNORO Super AI Agent. User says: {user_message}")
                     if resp["success"]:
@@ -357,11 +393,11 @@ if "Conversational AI" in nav_mode:
                 col_j1, col_j2 = st.columns(2)
                 with col_j1:
                     if st.button("👁️ VIEW CODE (SOURCE INSPECTOR)", key="jump_view_code_btn"):
-                        st.session_state.cyber_command_nav = "👁️ View Code (Source Inspector)"
+                        st.session_state.nav_sector = "👁️ View Code (Source Inspector)"
                         st.rerun()
                 with col_j2:
                     if st.button("🖥️ VIEW & USE APPLICATION", key="jump_view_app_btn"):
-                        st.session_state.cyber_command_nav = "🖥️ View & Use Application (Runtime & Preview)"
+                        st.session_state.nav_sector = "🖥️ View & Use Application (Runtime)"
                         st.rerun()
 
             st.markdown("#### 📋 Tactical Plan & Step Telemetry")
@@ -437,7 +473,7 @@ elif "View & Use Application" in nav_mode:
                                 proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
                                 st.session_state["app_preview_pid"] = proc.pid
                                 st.session_state["app_preview_active"] = True
-                                time.sleep(1)
+                                time.sleep(1.5)
                                 st.success(f"Application runtime started (PID: {proc.pid})!")
                                 st.rerun()
                             except Exception as ex:
@@ -457,7 +493,7 @@ elif "View & Use Application" in nav_mode:
                         st.success("Runtime stopped.")
                         st.rerun()
             else:
-                st.warning("No `main.py` found in workspace.")
+                st.warning("No `main.py` found in workspace. Execute steps to generate application.")
                 
         with col_r2:
             st.markdown("**Live Application Reachability & Preview**")
@@ -468,8 +504,9 @@ elif "View & Use Application" in nav_mode:
                 st.markdown(f"- **Accessible URL:** [{preview_url}]({preview_url})")
                 st.info("The application runtime is active. Use the link above or interact with the preview frame below.")
                 
+                # Wrap iframe in container with stable key to prevent React removeChild production errors
                 try:
-                    st.components.v1.iframe(preview_url, height=300, scrolling=True)
+                    st.components.v1.iframe(preview_url, height=320, scrolling=True)
                 except Exception:
                     st.markdown("*IFrame preview sandbox container active.*")
             else:
