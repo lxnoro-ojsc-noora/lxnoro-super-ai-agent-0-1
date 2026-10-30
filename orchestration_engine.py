@@ -52,6 +52,13 @@ TOOL_REGISTRY = {
         "parameters": {"prompt": str},
         "sensitive": True,
         "function": lambda prompt: nebius_client.nebius_chat_completion(prompt)
+    },
+    "nebius_plan_generator": {
+        "name": "nebius_plan_generator",
+        "description": "Generate a structured implementation plan using Nebius Token Factory (NVIDIA Nemotron).",
+        "parameters": {"prompt": str},
+        "sensitive": True,
+        "function": lambda prompt: nebius_client.nebius_chat_completion(prompt)
     }
 }
 
