@@ -7,7 +7,7 @@ from typing import List, Dict, Any, Optional
 from agent_memory import init_db
 
 # Protected paths and extensions that cannot be read or modified by workspace tools
-PROTECTED_PATHS = {'.env', '.git', 'data', '__pycache__', '.streamlit', 'agent_memory.db'}
+PROTECTED_PATHS = {'.env', '.git', 'data', '__pycache__', '.streamlit', 'agent_memory.db', 'GEMINI.md'}
 MAX_FILE_SIZE_BYTES = 500 * 1024  # 500 KB limit for reading/writing
 
 def get_workspace_root() -> str:

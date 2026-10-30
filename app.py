@@ -168,6 +168,41 @@ td {
 .status-active { background-color: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; box-shadow: 0 0 12px rgba(16, 185, 129, 0.4); }
 .status-pending { background-color: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; box-shadow: 0 0 12px rgba(245, 158, 11, 0.4); }
 .status-completed { background-color: rgba(6, 182, 212, 0.2); color: #22d3ee; border: 1px solid #06b6d4; box-shadow: 0 0 12px rgba(6, 182, 212, 0.4); }
+[data-testid="stChatInput"] {
+    background-color: #0d1322 !important;
+    border: 1px solid rgba(6, 182, 212, 0.4) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.9), inset 0 0 10px rgba(6, 182, 212, 0.05) !important;
+}
+[data-testid="stChatInput"] textarea {
+    background-color: #030712 !important;
+    color: #f8fafc !important;
+    font-family: 'Share Tech Mono', monospace !important;
+}
+[data-testid="stChatMessage"] {
+    background-color: rgba(13, 19, 34, 0.85) !important;
+    border: 1px solid rgba(30, 41, 59, 0.9) !important;
+    border-radius: 8px !important;
+    padding: 1rem !important;
+    margin-bottom: 0.8rem !important;
+}
+[data-testid="stTabs"] [data-baseweb="tab-list"] {
+    background-color: #050b14 !important;
+    border-radius: 8px !important;
+    padding: 4px !important;
+    border: 1px solid rgba(6, 182, 212, 0.2) !important;
+}
+[data-testid="stTabs"] [data-baseweb="tab"] {
+    color: #94a3b8 !important;
+    font-family: 'Orbitron', sans-serif !important;
+    font-size: 0.8rem !important;
+    font-weight: 700 !important;
+}
+[data-testid="stTabs"] [aria-selected="true"] {
+    background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%) !important;
+    color: #ffffff !important;
+    border-radius: 6px !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
