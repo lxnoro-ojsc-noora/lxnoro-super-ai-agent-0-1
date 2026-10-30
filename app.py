@@ -25,56 +25,65 @@ load_dotenv()
 init_db()
 
 st.set_page_config(
-    page_title="LXNORO SUPER AI AGENT // Cyber Command",
-    page_icon="🛡️",
+    page_title="LXNORO SUPER AI AGENT // Cyber Command HUD",
+    page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Futuristic Cybersecurity Gaming Command Center Theme CSS
+# High-End Futuristic Cybersecurity Gaming Command Center Theme CSS
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Share+Tech+Mono&family=Rajdhani:wght@500;700&family=Inter:wght@400;500;600&display=swap');
 
 .stApp {
-    background-color: #070a12 !important;
-    color: #e2e8f0 !important;
+    background-color: #030712 !important;
+    color: #f3f4f6 !important;
     font-family: 'Inter', sans-serif;
 }
 [data-testid="stSidebar"] {
-    background-color: #04060b !important;
-    border-right: 1px solid #1e293b !important;
+    background-color: #050b14 !important;
+    border-right: 1px solid rgba(6, 182, 212, 0.2) !important;
 }
 [data-testid="stHeader"] {
-    background-color: rgba(7, 10, 18, 0.95) !important;
+    background-color: rgba(3, 7, 18, 0.9) !important;
+    border-bottom: 1px solid rgba(6, 182, 212, 0.15);
 }
 h1, h2, h3, h4, h5, h6 {
     font-family: 'Orbitron', sans-serif !important;
-    letter-spacing: 1px !important;
     color: #f8fafc !important;
+    letter-spacing: 1.2px !important;
 }
 .cyber-title {
     font-family: 'Orbitron', sans-serif;
     font-weight: 900;
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     color: #06b6d4;
-    text-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
-    letter-spacing: 2px;
+    text-shadow: 0 0 20px rgba(6, 182, 212, 0.6), 0 0 40px rgba(6, 182, 212, 0.2);
+    letter-spacing: 2.5px;
 }
 .cyber-subtitle {
     font-family: 'Share Tech Mono', monospace;
     color: #38bdf8;
     font-size: 0.8rem;
-    letter-spacing: 1.5px;
+    letter-spacing: 2px;
     text-transform: uppercase;
 }
-div.stMarkdown, div.stExpander, div.stForm, div[data-testid="stVerticalBlock"] > div {
-    background-color: #0d1322 !important;
-    border: 1px solid #1e293b !important;
+.hud-panel {
+    background: linear-gradient(135deg, rgba(13, 19, 34, 0.9) 0%, rgba(7, 11, 20, 0.95) 100%) !important;
+    border: 1px solid rgba(6, 182, 212, 0.3) !important;
+    border-radius: 10px !important;
+    padding: 1.5rem !important;
+    margin-bottom: 1.2rem !important;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(6, 182, 212, 0.04) !important;
+    backdrop-filter: blur(10px);
+}
+div.stExpander, div.stForm, div[data-testid="stVerticalBlock"] > div {
+    background: rgba(13, 19, 34, 0.75) !important;
+    border: 1px solid rgba(30, 41, 59, 0.8) !important;
     border-radius: 8px !important;
     padding: 1.2rem !important;
     margin-bottom: 1rem !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
 }
 .stButton>button {
     background: linear-gradient(135deg, #0e172a 0%, #1e293b 100%) !important;
@@ -83,22 +92,29 @@ div.stMarkdown, div.stExpander, div.stForm, div[data-testid="stVerticalBlock"] >
     border-radius: 6px !important;
     font-family: 'Orbitron', sans-serif !important;
     font-weight: 700 !important;
-    font-size: 0.85rem !important;
-    letter-spacing: 1px !important;
+    font-size: 0.82rem !important;
+    letter-spacing: 1.2px !important;
+    padding: 0.6rem 1.2rem !important;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
 }
 .stButton>button:hover {
     background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%) !important;
     border-color: #38bdf8 !important;
-    box-shadow: 0 0 20px rgba(6, 182, 212, 0.6) !important;
+    box-shadow: 0 0 30px rgba(6, 182, 212, 0.8), 0 0 10px rgba(56, 189, 248, 0.5) !important;
     color: #ffffff !important;
+    transform: translateY(-1px);
 }
 input, textarea, select, div[data-baseweb="select"] > div, div[data-baseweb="input"] > div {
-    background-color: #050810 !important;
+    background-color: #030712 !important;
     color: #f8fafc !important;
-    border: 1px solid #1e293b !important;
+    border: 1px solid rgba(6, 182, 212, 0.3) !important;
     border-radius: 6px !important;
     font-family: 'Share Tech Mono', monospace !important;
+}
+input:focus, textarea:focus {
+    border-color: #06b6d4 !important;
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.4) !important;
 }
 input::placeholder, textarea::placeholder {
     color: #475569 !important;
@@ -111,8 +127,11 @@ div[data-baseweb="select"] span, div[data-baseweb="select"] div, div[data-basewe
     fill: #f8fafc !important;
 }
 .stRadio label, .stCheckbox label {
-    color: #cbd5e1 !important;
-    font-weight: 500 !important;
+    color: #e2e8f0 !important;
+    font-family: 'Rajdhani', sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 1.05rem !important;
+    letter-spacing: 0.5px !important;
 }
 table {
     background-color: #0d1322 !important;
@@ -127,26 +146,28 @@ th {
 }
 td {
     color: #cbd5e1 !important;
-    border-bottom: 1px solid #1e293b !important;
+    border-bottom: 1px solid rgba(30, 41, 59, 0.8) !important;
     font-family: 'Share Tech Mono', monospace !important;
 }
 .stAlert {
-    background-color: #0d1322 !important;
+    background-color: rgba(13, 19, 34, 0.95) !important;
     color: #f8fafc !important;
     border: 1px solid #06b6d4 !important;
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
 }
 .status-badge {
     display: inline-block;
-    padding: 0.25rem 0.75rem;
+    padding: 0.3rem 0.8rem;
     border-radius: 4px;
     font-family: 'Share Tech Mono', monospace;
     font-size: 0.8rem;
     font-weight: bold;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
 }
-.status-active { background-color: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
-.status-pending { background-color: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid #f59e0b; }
-.status-completed { background-color: rgba(6, 182, 212, 0.2); color: #06b6d4; border: 1px solid #06b6d4; }
+.status-active { background-color: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; box-shadow: 0 0 12px rgba(16, 185, 129, 0.4); }
+.status-pending { background-color: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; box-shadow: 0 0 12px rgba(245, 158, 11, 0.4); }
+.status-completed { background-color: rgba(6, 182, 212, 0.2); color: #22d3ee; border: 1px solid #06b6d4; box-shadow: 0 0 12px rgba(6, 182, 212, 0.4); }
 </style>
 """, unsafe_allow_html=True)
 
@@ -157,21 +178,21 @@ if "active_task_id" not in st.session_state:
 
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [
-        {"role": "assistant", "content": "LXNORO Cyber Command AI online. Describe the software application or website you wish to build in natural language."}
+        {"role": "assistant", "content": "🛡️ LXNORO Cyber Command HUD online. Describe the software application or website you wish to build in natural language."}
     ]
 
 # Sidebar Cyber Command Telemetry & Navigation
 with st.sidebar:
     st.markdown("""
-        <div style="padding: 0.5rem 0 1rem 0; border-bottom: 1px solid #1e293b; margin-bottom: 1rem;">
-            <div class="cyber-title">LXNORO AGENT</div>
+        <div style="padding: 0.8rem 0 1.2rem 0; border-bottom: 1px solid rgba(6, 182, 212, 0.25); margin-bottom: 1.2rem;">
+            <div class="cyber-title">LXNORO HUD</div>
             <div class="cyber-subtitle">Cyber Command v0.1</div>
         </div>
     """, unsafe_allow_html=True)
     
     st.markdown("### 🛡️ ACTIVE OPERATIONS")
     tasks = get_tasks()
-    task_options = {t['id']: f"OP #{t['id']}: {t['goal'][:28]}... [{t['status']}]" for t in tasks} if tasks else {}
+    task_options = {t['id']: f"OP #{t['id']}: {t['goal'][:26]}... [{t['status']}]" for t in tasks} if tasks else {}
     
     if task_options:
         selected_task_id = st.selectbox(
@@ -197,7 +218,7 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### 🧭 COMMAND SECTORS")
     nav_mode = st.radio(
-        "Navigation Mode",
+        "Navigation Sector",
         [
             "💬 Conversational AI & Pipeline",
             "👁️ View Code (Source Inspector)",
@@ -208,11 +229,11 @@ with st.sidebar:
         key="cyber_command_nav"
     )
 
-# Main Cyber Command Banner
+# Main Cyber Command Banner HUD
 st.markdown("""
-    <div style="padding: 0.5rem 0 1.5rem 0; border-bottom: 1px solid #1e293b; margin-bottom: 1.5rem;">
-        <h1 style="margin-bottom: 0px; font-size: 1.8rem; color: #f8fafc; text-shadow: 0 0 10px rgba(6, 182, 212, 0.3);">🛡️ LXNORO SUPER AI AGENT // CYBER COMMAND</h1>
-        <p style="color: #38bdf8; font-size: 0.9rem; margin-top: 4px; font-family: 'Share Tech Mono', monospace; letter-spacing: 1px;">AUTONOMOUS SOFTWARE ENGINEERING & INTELLIGENCE OPERATIONS CENTER</p>
+    <div class="hud-panel" style="padding: 1.2rem 1.5rem; margin-bottom: 1.5rem;">
+        <h1 style="margin-bottom: 0px; font-size: 1.7rem; color: #f8fafc; text-shadow: 0 0 15px rgba(6, 182, 212, 0.5);">⚡ LXNORO SUPER AI AGENT // CYBER COMMAND HUD</h1>
+        <p style="color: #38bdf8; font-size: 0.85rem; margin-top: 6px; font-family: 'Share Tech Mono', monospace; letter-spacing: 1.5px;">AUTONOMOUS SOFTWARE ENGINEERING & INTELLIGENCE OPERATIONS CENTER</p>
     </div>
 """, unsafe_allow_html=True)
 
@@ -221,7 +242,7 @@ st.markdown("""
 # -------------------------------------------------------------
 if "Conversational AI" in nav_mode:
     st.subheader("💬 CONVERSATIONAL AI & AUTONOMOUS PIPELINE")
-    st.markdown("Chat naturally with the LXNORO Agent to describe your product idea, architecture requirements, or workflow. The agent will plan and execute the build autonomously.")
+    st.markdown("Chat naturally with the LXNORO Cyber Command Agent to describe your product idea, architecture requirements, or workflow. The agent will plan and execute the build autonomously.")
     
     for message in st.session_state.chat_history:
         with st.chat_message(message["role"]):
@@ -234,11 +255,11 @@ if "Conversational AI" in nav_mode:
             st.markdown(user_message)
             
         with st.chat_message("assistant"):
-            with st.spinner("LXNORO Agent analyzing requirements & orchestrating autonomous pipeline..."):
+            with st.spinner("LXNORO Cyber Agent analyzing requirements & orchestrating autonomous pipeline..."):
                 if "build" in user_message.lower() or "create" in user_message.lower() or "app" in user_message.lower() or "system" in user_message.lower() or len(get_tasks()) == 0:
                     new_id = create_task(user_message, step_count=5)
                     st.session_state.active_task_id = new_id
-                    reply = f"🚀 **Operation #{new_id} Initialized!** Autonomous execution plan generated. Switch to the execution console or continue chatting to modify the build."
+                    reply = f"🚀 **Operation #{new_id} Initialized!** Autonomous execution plan generated. Switch to the execution console below or continue chatting to modify the build."
                 else:
                     resp = nebius_chat_completion(f"You are LXNORO Super AI Agent. User says: {user_message}")
                     if resp["success"]:
@@ -368,8 +389,6 @@ elif "View & Use Application" in nav_mode:
                     if st.button("🚀 START PREVIEW RUNTIME", key="start_preview_btn"):
                         with st.spinner("Starting application preview server..."):
                             try:
-                                # Start a lightweight python http test server or run main.py in background if it's a web app
-                                # For demo/preview, we can start a background process running python main.py or python -m http.server
                                 cmd = [sys.executable, "main.py"]
                                 proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
                                 st.session_state["app_preview_pid"] = proc.pid
@@ -405,7 +424,6 @@ elif "View & Use Application" in nav_mode:
                 st.markdown(f"- **Accessible URL:** [{preview_url}]({preview_url})")
                 st.info("The application runtime is active. Use the link above or interact with the preview frame below.")
                 
-                # Embed iframe or preview container when reachable
                 try:
                     st.components.v1.iframe(preview_url, height=300, scrolling=True)
                 except Exception:
