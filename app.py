@@ -383,9 +383,11 @@ elif "View & Use Application" in nav_mode:
                     if st.button("⏹️ STOP RUNTIME", key="stop_preview_btn"):
                         if "app_preview_pid" in st.session_state:
                             try:
-                                import psutil
-                                p = psutil.Process(st.session_state["app_preview_pid"])
-                                p.terminate()
+                                pid = st.session_state["app_preview_pid"]
+                                if os.name == 'nt':
+                                    subprocess.run(["taskkill", "/F", "/PID", str(pid)], capture_output=True, timeout=3)
+                                else:
+                                    os.kill(pid, 15)
                             except Exception:
                                 pass
                         st.session_state["app_preview_active"] = False
