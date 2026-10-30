@@ -4,238 +4,254 @@ from dotenv import load_dotenv
 from agent_memory import (
     init_db, create_task, get_tasks, get_task, 
     get_steps, update_step_status, get_memory_logs,
-    store_long_term_memory, get_long_term_memories,
-    search_long_term_memories, update_long_term_memory,
-    delete_long_term_memory, clear_long_term_memories,
-    get_relevant_memory_context, modify_project
+    get_long_term_memories, modify_project
 )
 from workspace_tools import (
     list_workspace_files, read_text_file, write_workspace_file,
-    search_workspace, run_approved_command, APPROVED_COMMANDS
+    search_workspace
 )
 from execution_engine import (
     get_next_eligible_step, execute_step, recover_interrupted_steps
 )
 from delivery_utils import get_git_status_info, generate_project_zip
-from nebius_client import nebius_chat_completion, get_nebius_api_key, get_nebius_model, NEBIUS_BASE_URL
-from orchestration_engine import (
-    get_registered_tools, select_relevant_tools, validate_tool_call,
-    requires_approval, execute_orchestrated_tool
-)
+from nebius_client import get_nebius_api_key, get_nebius_model
 
 load_dotenv()
 init_db()
 
 st.set_page_config(
     page_title="LXNORO Super AI Agent 0-1",
-    page_icon="🤖",
+    page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Comprehensive High-Contrast Cyberpunk / Video-Game Tactical Theme CSS
+# Premium Professional Command-Center Aesthetic CSS
 st.markdown("""
 <style>
 .stApp {
-    background-color: #07050b !important;
-    color: #ffffff !important;
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #0b0e14 !important;
+    color: #f1f5f9 !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 [data-testid="stSidebar"] {
-    background-color: #040208 !important;
-    border-right: 1px solid #1c0f2e !important;
+    background-color: #07090d !important;
+    border-right: 1px solid #1e2633 !important;
 }
 [data-testid="stHeader"] {
-    background-color: rgba(7, 5, 11, 0.95) !important;
+    background-color: rgba(11, 14, 20, 0.95) !important;
 }
-h1, h2, h3, h4, h5, h6, p, span, label, div, .stMarkdown, .stText, stMarkdown p {
-    color: #ffffff !important;
+h1, h2, h3, h4, h5, h6, p, span, label, div {
+    color: #f1f5f9 !important;
 }
 div.stMarkdown, div.stExpander, div.stForm, div[data-testid="stVerticalBlock"] > div {
-    background-color: #11091d !important;
-    border: 1px solid #2b144a !important;
-    border-radius: 8px !important;
+    background-color: #121720 !important;
+    border: 1px solid #1e2633 !important;
+    border-radius: 6px !important;
     padding: 1rem !important;
     margin-bottom: 1rem !important;
-    color: #ffffff !important;
+    color: #f1f5f9 !important;
 }
 .stButton>button {
-    background: linear-gradient(135deg, #2c144a 0%, #130a21 100%) !important;
-    color: #ffffff !important;
-    border: 1px solid #7b2cbf !important;
+    background: #1e2633 !important;
+    color: #f8fafc !important;
+    border: 1px solid #334155 !important;
     border-radius: 6px !important;
-    font-weight: 700 !important;
-    letter-spacing: 0.5px !important;
-    transition: all 0.3s ease !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.3px !important;
+    transition: all 0.2s ease !important;
 }
 .stButton>button:hover {
-    background: linear-gradient(135deg, #7b2cbf 0%, #2c144a 100%) !important;
-    border-color: #c084fc !important;
-    box-shadow: 0 0 15px rgba(168, 85, 247, 0.5) !important;
+    background: #334155 !important;
+    border-color: #4f46e5 !important;
     color: #ffffff !important;
 }
 input, textarea, select, div[data-baseweb="select"] > div, div[data-baseweb="input"] > div {
-    background-color: #0b0514 !important;
-    color: #ffffff !important;
-    border: 1px solid #3b1d63 !important;
+    background-color: #0f131a !important;
+    color: #f1f5f9 !important;
+    border: 1px solid #27303f !important;
     border-radius: 6px !important;
 }
 input::placeholder, textarea::placeholder {
-    color: #a0a0b8 !important;
+    color: #64748b !important;
 }
 .stTextInput input, .stTextArea textarea {
-    color: #ffffff !important;
+    color: #f1f5f9 !important;
 }
 div[data-baseweb="select"] span, div[data-baseweb="select"] div, div[data-baseweb="select"] svg {
-    color: #ffffff !important;
-    fill: #ffffff !important;
+    color: #f1f5f9 !important;
+    fill: #f1f5f9 !important;
 }
 .stRadio label, .stCheckbox label {
-    color: #ffffff !important;
-    font-weight: 600 !important;
+    color: #e2e8f0 !important;
+    font-weight: 500 !important;
 }
 table {
-    background-color: #11091d !important;
-    color: #ffffff !important;
+    background-color: #121720 !important;
+    color: #f1f5f9 !important;
 }
 th {
-    background-color: #1f0f35 !important;
-    color: #ffffff !important;
-    font-weight: bold !important;
+    background-color: #1a2230 !important;
+    color: #f8fafc !important;
+    font-weight: 600 !important;
 }
 td {
-    color: #f3f4f6 !important;
-    border-bottom: 1px solid #2b144a !important;
+    color: #cbd5e1 !important;
+    border-bottom: 1px solid #1e2633 !important;
 }
 .stAlert {
-    background-color: #11091d !important;
-    color: #ffffff !important;
-    border: 1px solid #581c87 !important;
+    background-color: #121720 !important;
+    color: #f1f5f9 !important;
+    border: 1px solid #334155 !important;
 }
 .brand-container {
     padding: 0.75rem 0 1rem 0;
-    border-bottom: 1px solid #2b144a;
+    border-bottom: 1px solid #1e2633;
     margin-bottom: 1rem;
 }
 .brand-title {
-    font-size: 1.25rem;
-    font-weight: 900;
-    color: #d8b4fe;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #f8fafc;
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 1.5px;
     margin: 0;
-    text-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
 }
 .brand-subtitle {
-    font-size: 0.75rem;
-    color: #c084fc;
-    margin-top: 0.3rem;
-    letter-spacing: 1px;
+    font-size: 0.7rem;
+    color: #94a3b8;
+    margin-top: 0.2rem;
+    letter-spacing: 0.5px;
+}
+.metric-card {
+    background-color: #121720;
+    border: 1px solid #1e2633;
+    padding: 1rem;
+    border-radius: 6px;
+    text-align: center;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# Sidebar Navigation & Branding
+# Initialize session state for active task
+if "active_task_id" not in st.session_state:
+    tasks = get_tasks()
+    st.session_state.active_task_id = tasks[0]["id"] if tasks else None
+
+# Sidebar Navigation & Command Center Controls
 with st.sidebar:
     st.markdown("""
         <div class="brand-container">
             <div class="brand-title">LXNORO SUPER AI AGENT</div>
-            <div class="brand-subtitle">Autonomous Pipeline • v0.1</div>
+            <div class="brand-subtitle">Autonomous Dev Command Center • v0.1</div>
         </div>
     """, unsafe_allow_html=True)
     
-    st.header("Agent Configuration")
-    api_key_input = st.text_input("Gemini API Key", type="password", value=os.getenv("GEMINI_API_KEY", ""), key="sidebar_gemini_key")
+    st.markdown("### 🗂️ Project Workspace")
+    tasks = get_tasks()
+    task_options = {t['id']: f"#{t['id']}: {t['goal'][:35]}... ({t['status'])" for t in tasks} if tasks else {}
+    
+    if task_options:
+        selected_task_id = st.selectbox(
+            "Switch Active Project",
+            options=list(task_options.keys()),
+            format_func=lambda x: task_options[x],
+            key="sidebar_task_selectbox"
+        )
+        if selected_task_id != st.session_state.active_task_id:
+            st.session_state.active_task_id = selected_task_id
+            st.rerun()
+    else:
+        st.markdown("*No projects found.*")
 
     st.markdown("---")
-    st.subheader("Nebius Token Factory")
-    nebius_key_status = "🟢 Configured" if get_nebius_api_key() else "🔴 Missing"
-    st.markdown(f"- **API Key:** {nebius_key_status}")
+    st.markdown("### ⚙️ System Status")
+    nebius_status = "🟢 Active" if get_nebius_api_key() else "⚪ Smart Local Fallback"
+    st.markdown(f"- **Nemotron/Nebius:** {nebius_status}")
     st.markdown(f"- **Model:** `{get_nebius_model()}`")
+    st.markdown(f"- **Database:** `data/agent_memory.db`")
 
     st.markdown("---")
-    st.subheader("Navigation Menu")
-    nav_selection = st.radio(
-        "Select Operation Mode",
+    st.markdown("### 🧭 Command Center Navigation")
+    nav_mode = st.radio(
+        "Select View",
         [
-            "🚀 Start Building (Autonomous Pipeline)",
-            "🧠 Task Memory & Execution Engine",
-            "🛠️ Safe Workspace Tools",
-            "📦 Dual Delivery Center",
-            "⚡ Nebius & Nemotron",
-            "🎯 Tool Orchestration",
-            "🧠 Persistent Long-Term Memory",
-            "🚀 Dashboard & Roadmap"
+            "🚀 Autonomous Pipeline & Execution",
+            "📂 Workspace Files & Code Editor",
+            "📊 Execution Logs & Memory"
         ],
-        key="main_navigation_radio"
+        key="command_center_nav"
     )
 
 # Main Header Banner
 st.markdown("""
-    <div style="padding: 0.5rem 0 1rem 0;">
-        <h1 style="margin-bottom: 0px; font-size: 2rem; color: #ffffff;">🤖 LXNORO SUPER AI AGENT</h1>
-        <p style="color: #e2e8f0; font-size: 0.95rem; margin-top: 4px;">Autonomous Software Development Pipeline — Natural Language Idea to Runnable Project</p>
+    <div style="padding: 0.2rem 0 1rem 0;">
+        <h1 style="margin-bottom: 0px; font-size: 1.8rem; color: #f8fafc;">⚡ LXNORO SUPER AI AGENT</h1>
+        <p style="color: #94a3b8; font-size: 0.9rem; margin-top: 4px;">Autonomous Software Development Agent — Natural Language to Runnable Project</p>
     </div>
 """, unsafe_allow_html=True)
 
-# Initialize session state for active task
-if "active_task_id" not in st.session_state:
-    st.session_state.active_task_id = None
-
 # Route based on navigation selection
-if "Start Building" in nav_selection:
+if "Autonomous Pipeline" in nav_mode:
     st.subheader("🚀 Autonomous Software Development Pipeline")
-    st.markdown("Enter a natural-language software project request. The agent will autonomously generate a dynamic plan using Nemotron (with smart fallback), orchestrate workspace tools, create/modify actual project files, and persist progress.")
     
-    # Single idea input & START BUILDING action
-    with st.form("start_building_form"):
+    # New Project Creation Form
+    with st.form("new_project_form"):
+        st.markdown("**Initialize New Autonomous Project**")
         project_idea = st.text_area(
-            "Natural-Language Software Project Idea", 
-            placeholder="e.g., Build a real-time collaborative task management web app with Python and Streamlit",
-            height=120,
-            key="start_building_idea_input"
+            "Software Project Idea (Natural Language)", 
+            placeholder="e.g., Build a full-stack REST API service with SQLite database and FastAPI in Python",
+            height=90,
+            key="new_project_idea_input"
         )
-        step_slider = st.slider("Implementation Plan Steps", min_value=3, max_value=20, value=5, key="start_building_steps_slider")
-        submit_build = st.form_submit_button("🚀 START BUILDING")
-        
-        if submit_build:
+        col_f1, col_f2 = st.columns(2)
+        with col_f1:
+            step_count = st.slider("Implementation Plan Steps", min_value=3, max_value=12, value=5, key="new_project_steps_slider")
+        with col_f2:
+            st.markdown("<br>", unsafe_allow_html=True)
+            submit_idea = st.form_submit_button("🚀 START BUILDING PROJECT")
+            
+        if submit_idea:
             if project_idea.strip():
-                with st.spinner("Nemotron planning engine generating architectural plan and initializing workspace..."):
-                    new_id = create_task(project_idea.strip(), step_slider)
+                with st.spinner("Initializing autonomous planning engine & workspace..."):
+                    new_id = create_task(project_idea.strip(), step_count)
                     st.session_state.active_task_id = new_id
-                st.success(f"Project initialized successfully! Task #{new_id} created with {step_slider} autonomous steps.")
+                st.success(f"Project initialized successfully! Task #{new_id} created.")
                 st.rerun()
             else:
                 st.error("Please enter a software project idea.")
 
-    # If an active task is loaded, show live execution progress and files
+    st.markdown("---")
+    
+    # Active Task Live Monitor & Execution
     if st.session_state.active_task_id:
-        st.markdown("---")
-        st.markdown("### 📊 Live Execution Monitor & Progress")
-        
+        recover_interrupted_steps(st.session_state.active_task_id)
         task = get_task(st.session_state.active_task_id)
         steps = get_steps(st.session_state.active_task_id)
         files = list_workspace_files(st.session_state.active_task_id)
         
         if task:
-            col_m1, col_m2, col_m3 = st.columns(3)
+            col_m1, col_m2, col_m3, col_m4 = st.columns(4)
             with col_m1:
-                st.markdown(f"**Task ID:** #{task['id']}")
+                st.markdown(f"**Project ID:** #{task['id']}")
             with col_m2:
                 st.markdown(f"**Status:** `{task['status']}`")
             with col_m3:
-                st.markdown(f"**Total Files Created:** {len(files)}")
+                completed_count = sum(1 for s in steps if s['status'] == 'COMPLETED')
+                st.markdown(f"**Progress:** {completed_count}/{len(steps)} Steps")
+            with col_m4:
+                st.markdown(f"**Workspace Files:** {len(files)}")
                 
-            st.markdown(f"**Current Goal:** {task['goal']}")
+            st.markdown(f"**Active Goal:** {task['goal']}")
             
-            # Execution Control
+            # Step execution controls
             next_step = get_next_eligible_step(task['id'])
             if next_step:
                 st.info(f"**Next Eligible Step:** Step {next_step['step_number']} — {next_step['title']} (Status: `{next_step['status']}`)")
                 
                 col_ex1, col_ex2 = st.columns(2)
                 with col_ex1:
-                    if st.button("▶️ Run Next Step", key="live_run_next_btn"):
+                    if st.button("▶️ Run Next Step", key="exec_next_step_btn"):
                         success, msg = execute_step(next_step['id'])
                         if success:
                             st.success(msg)
@@ -243,151 +259,132 @@ if "Start Building" in nav_selection:
                         else:
                             st.error(msg)
                 with col_ex2:
-                    if st.button("⚡ Auto-Run All Remaining Steps", key="live_run_all_btn"):
-                        curr_step = next_step
-                        while curr_step:
-                            s_success, s_msg = execute_step(curr_step['id'])
-                            if not s_success:
-                                st.error(f"Execution halted on Step {curr_step['step_number']}: {s_msg}")
+                    if st.button("⚡ Auto-Run All Remaining Steps", key="exec_all_steps_btn"):
+                        curr = next_step
+                        while curr:
+                            succ, msg = execute_step(curr['id'])
+                            if not succ:
+                                st.error(f"Execution halted on Step {curr['step_number']}: {msg}")
                                 break
-                            curr_step = get_next_eligible_step(task['id'])
+                            curr = get_next_eligible_step(task['id'])
                         st.success("All remaining steps executed successfully!")
                         st.rerun()
             else:
-                st.success("🎉 All project implementation steps completed successfully! Review project files below or download delivery ZIP.")
+                st.success("🎉 All project implementation steps completed successfully! Review source files below or download delivery package.")
 
-            st.markdown("#### 📋 Plan Steps Breakdown")
+            st.markdown("#### 📋 Implementation Plan & Steps Breakdown")
             for s in steps:
                 with st.expander(f"Step {s['step_number']}: {s['title']} [{s['status']}]"):
                     st.markdown(f"**Objective:** {s['objective']}")
-                    st.markdown(f"**Result:** {s['result'] or 'Pending execution.'}")
+                    st.markdown(f"**Execution Result:** {s['result'] or 'Pending execution.'}")
 
-            st.markdown("#### 📂 Workspace Files Created / Modified")
+            st.markdown("#### 📂 Workspace Files Generated")
             if files:
                 for f_path in files:
                     st.markdown(f"- `{f_path}`")
             else:
-                st.info("No files created in workspace yet.")
+                st.info("No files generated in workspace yet.")
 
             st.markdown("---")
-            st.markdown("#### 🔄 Continuous Modification (Modify Existing Project)")
-            with st.form("continuous_mod_form"):
-                mod_request = st.text_input("Request Project Modification / Follow-up Feature", placeholder="e.g., Add dark mode toggle and user authentication module", key="mod_request_input")
-                submit_mod = st.form_submit_button("Apply Targeted Modification")
+            st.markdown("#### 🔄 Continuous Project Modification (Natural Language Follow-up)")
+            with st.form("continuous_modification_form"):
+                mod_prompt = st.text_input(
+                    "Follow-up Instructions / Feature Request",
+                    placeholder="e.g., Add unit tests for the core modules and enhance error logging",
+                    key="mod_prompt_input"
+                )
+                submit_mod = st.form_submit_button("Apply In-Place Modification")
                 if submit_mod:
-                    if mod_request.strip():
-                        with st.spinner("Applying in-place project modification using orchestrated workspace tools..."):
-                            success, msg, changed_files = modify_project(task['id'], mod_request.strip())
+                    if mod_prompt.strip():
+                        with st.spinner("Modifying project in place using orchestrated workspace tools..."):
+                            success, msg, changed = modify_project(task['id'], mod_prompt.strip())
                         if success:
-                            st.success(f"{msg} Changed file(s): {', '.join(changed_files)}")
+                            st.success(f"{msg} Changed files: {', '.join(changed)}")
                             st.rerun()
                         else:
-                            st.error(f"Modification failed: {msg}")
+                            st.error(msg)
                     else:
-                        st.warning("Please enter a modification request.")
+                        st.warning("Please enter modification instructions.")
 
-elif "Task Memory & Execution" in nav_selection:
-    st.subheader("🧠 Persistent Task Memory & Execution Engine")
-    tasks = get_tasks()
-    if not tasks:
-        st.warning("No tasks available. Use 'Start Building' to create a project.")
+            st.markdown("---")
+            st.markdown("#### 📦 Delivery & Export Center")
+            col_d1, col_d2 = st.columns(2)
+            with col_d1:
+                if st.button("Prepare Project ZIP Archive", key="prep_zip_btn"):
+                    zip_data = generate_project_zip()
+                    st.download_button(
+                        "📥 Download Runnable Project ZIP",
+                        data=zip_data,
+                        file_name=f"LXNORO-Project-{task['id']}.zip",
+                        mime="application/zip",
+                        key="download_zip_action"
+                    )
+            with col_d2:
+                git_info = get_git_status_info()
+                st.text_input("Git Status Summary", value=git_info['status_output'].split('\n')[0] if git_info['status_output'] else "Clean", disabled=True, key="git_status_display")
     else:
-        task_options = {t['id']: f"Task #{t['id']}: {t['goal']} ({t['status']})" for t in tasks}
-        selected_task_id = st.selectbox("Select Task", options=list(task_options.keys()), format_func=lambda x: task_options[x], key="exec_task_sel")
-        st.session_state.active_task_id = selected_task_id
-        
-        recover_interrupted_steps(selected_task_id)
-        task = get_task(selected_task_id)
-        steps = get_steps(selected_task_id)
-        logs = get_memory_logs(selected_task_id)
-        
-        if task:
-            st.markdown(f"**Goal:** {task['goal']}")
-            st.markdown(f"**Status:** `{task['status']}`")
-            next_step = get_next_eligible_step(selected_task_id)
-            if next_step and st.button("Run Next Eligible Step", key="exec_engine_run_btn"):
-                succ, msg = execute_step(next_step['id'])
-                if succ:
-                    st.success(msg)
-                    st.rerun()
-                else:
-                    st.error(msg)
-                    
-            st.markdown("### Steps")
-            for s in steps:
-                st.markdown(f"- Step {s['step_number']}: {s['title']} [`{s['status']}`] — {s['result']}")
+        st.info("No active project selected. Initialize a project above or select one from the sidebar.")
 
-            st.markdown("### Memory Logs")
-            for l in logs:
-                st.text(f"[{l['timestamp']}] {l['summary']}")
-
-elif "Safe Workspace Tools" in nav_selection:
-    st.subheader("🛠️ Safe Workspace Tools")
-    tool_sub1, tool_sub2, tool_sub3 = st.tabs(["📂 File Inspection", "✏️ File Editor", "🔍 Search"])
-    with tool_sub1:
+elif "Workspace Files & Code Editor" in nav_mode:
+    st.subheader("📂 Workspace Files & Code Editor")
+    
+    if not st.session_state.active_task_id:
+        st.warning("No active project selected.")
+    else:
         files = list_workspace_files(st.session_state.active_task_id)
-        sel = st.selectbox("Select File", options=files if files else ["No files"], key="tools_file_sel")
-        if sel and sel != "No files" and st.button("Read File", key="tools_read_btn"):
-            ok, content = read_text_file(sel, st.session_state.active_task_id)
-            if ok:
-                st.text_area("Content", value=content, height=250, key="tools_content_area")
+        
+        col_fe1, col_fe2 = st.columns([1, 2])
+        with col_fe1:
+            st.markdown("**Workspace File Tree**")
+            selected_file = st.selectbox("Select File to Inspect", options=files if files else ["No files"], key="editor_file_select")
+            
+            search_q = st.text_input("Search Codebase", placeholder="Enter keyword...", key="editor_search_input")
+            if search_q.strip():
+                matches = search_workspace(search_q.strip(), st.session_state.active_task_id)
+                st.markdown("**Search Results:**")
+                for m in matches:
+                    st.markdown(f"- `{m}`")
+                    
+        with col_fe2:
+            st.markdown("**File Content & Editor**")
+            if selected_file and selected_file != "No files":
+                success, content = read_text_file(selected_file, st.session_state.active_task_id)
+                if success:
+                    edited_content = st.text_area("File Source Code", value=content, height=350, key="editor_content_textarea")
+                    if st.button("Save File Changes", key="editor_save_btn"):
+                        ok, msg = write_workspace_file(selected_file, edited_content, st.session_state.active_task_id)
+                        if ok:
+                            st.success(msg)
+                        else:
+                            st.error(msg)
+                else:
+                    st.error(content)
             else:
-                st.error(content)
-    with tool_sub2:
-        path = st.text_input("File Path", value="notes.txt", key="tools_edit_path")
-        content = st.text_area("Content", value="New content", key="tools_edit_content")
-        if st.button("Save File", key="tools_save_btn"):
-            ok, msg = write_workspace_file(path, content, st.session_state.active_task_id)
-            if ok:
-                st.success(msg)
+                st.info("Select a file from the left to view or edit.")
+
+elif "Execution Logs & Memory" in nav_mode:
+    st.subheader("📊 Execution Logs & Persistent Memory")
+    
+    if not st.session_state.active_task_id:
+        st.warning("No active project selected.")
+    else:
+        task_id = st.session_state.active_task_id
+        logs = get_memory_logs(task_id)
+        memories = get_long_term_memories()
+        
+        tab_l1, tab_l2 = st.tabs(["📝 Task Execution & Audit Logs", "🧠 Long-Term Memories"])
+        with tab_l1:
+            st.markdown(f"**Audit & Memory Trail for Task #{task_id}**")
+            if logs:
+                for log in logs:
+                    st.text(f"[{log['timestamp']}] {log['summary']}")
             else:
-                st.error(msg)
-    with tool_sub3:
-        q = st.text_input("Search Query", key="tools_search_q")
-        if st.button("Search", key="tools_search_btn") and q.strip():
-            matches = search_workspace(q.strip(), st.session_state.active_task_id)
-            for m in matches:
-                st.markdown(f"- `{m}`")
-
-elif "Dual Delivery Center" in nav_selection:
-    st.subheader("📦 Dual Delivery Center")
-    del_sub1, del_sub2 = st.tabs(["🐙 GitHub Delivery", "🗂️ ZIP Archive Delivery"])
-    with del_sub1:
-        git_info = get_git_status_info()
-        st.code(git_info['status_output'], language="text")
-    with del_sub2:
-        if st.button("Prepare Project ZIP", key="delivery_zip_btn"):
-            zip_bytes = generate_project_zip()
-            st.download_button("📥 Download Project ZIP", data=zip_bytes, file_name="LXNORO-Autonomous-Project.zip", mime="application/zip", key="delivery_download_btn")
-
-elif "Nebius & Nemotron" in nav_selection:
-    st.subheader("⚡ Nebius Token Factory + NVIDIA Nemotron Integration")
-    prompt = st.text_area("Prompt for Nemotron", value="Hello Nemotron", key="nebius_prompt_box")
-    if st.button("Send to Nebius", key="nebius_send_btn") and prompt.strip():
-        res = nebius_chat_completion(prompt.strip())
-        if res["success"]:
-            st.success(res["content"])
-        else:
-            st.error(res["error"])
-
-elif "Tool Orchestration" in nav_selection:
-    st.subheader("🎯 Autonomous Tool Orchestration")
-    tools = get_registered_tools()
-    for t in tools:
-        st.markdown(f"- **`{t['name']}`**: {t['description']}")
-
-elif "Persistent Long-Term Memory" in nav_selection:
-    st.subheader("🧠 Persistent Long-Term Memory")
-    mems = get_long_term_memories()
-    st.markdown(f"Total memories: {len(mems)}")
-    for m in mems:
-        st.markdown(f"- **[{m['category']}] {m['memory_key']}**: {m['content']}")
-
-elif "Dashboard & Roadmap" in nav_selection:
-    st.subheader("🚀 Operational Dashboard & Roadmap")
-    tasks = get_tasks()
-    st.markdown(f"Total tasks: {len(tasks)}")
-    roadmap = [
-        {"Phase": "Phase 1-8", "Focus": "Autonomous Software Development Pipeline & Integration", "Status": "Completed ✅"}
-    ]
-    st.table(roadmap)
+                st.info("No execution logs recorded yet.")
+                
+        with tab_l2:
+            st.markdown("**Global Long-Term Agent Memories**")
+            if memories:
+                for mem in memories:
+                    st.markdown(f"- **[{mem['category']}] `{mem['memory_key']}`**: {mem['content']} *(Importance: {mem['importance']})*")
+            else:
+                st.info("No long-term memories stored.")
