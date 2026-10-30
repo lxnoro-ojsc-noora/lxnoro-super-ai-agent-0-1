@@ -149,7 +149,7 @@ with st.sidebar:
     
     st.markdown("### 🗂️ Project Workspace")
     tasks = get_tasks()
-    task_options = {t['id']: f"#{t['id']}: {t['goal'][:35]}... ({t['status'])" for t in tasks} if tasks else {}
+    task_options = {t['id']: f"#{t['id']}: {t['goal'][:35]}... ({t['status']})" for t in tasks} if tasks else {}
     
     if task_options:
         selected_task_id = st.selectbox(
