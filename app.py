@@ -316,7 +316,7 @@ if "Conversational AI" in nav_mode:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
             
-    user_message = st.chat_input("Describe your software project or requirement in natural language...")
+    user_message = st.chat_input("Describe your software project or requirement in natural language...", key="main_chat_input")
     if user_message:
         st.session_state.chat_history.append({"role": "user", "content": user_message})
         with st.chat_message("user"):
@@ -336,6 +336,9 @@ if "Conversational AI" in nav_mode:
                         reply = f"⚠️ **Nebius API Error:** {resp.get('error')}"
                 st.markdown(reply)
                 st.session_state.chat_history.append({"role": "assistant", "content": reply})
+                # Clear chat input state upon successful submission/entry
+                if "main_chat_input" in st.session_state:
+                    st.session_state["main_chat_input"] = ""
                 st.rerun()
 
     st.markdown("---")
@@ -532,7 +535,7 @@ elif "Continuous In-Place" in nav_mode:
         st.warning("No active operation selected.")
     else:
         task = get_task(st.session_state.active_task_id)
-        with st.form("continuous_mod_form"):
+        with st.form("continuous_mod_form", clear_on_submit=True):
             mod_prompt = st.text_input(
                 "Follow-up Instructions / Feature Request",
                 placeholder="e.g., Add secure authentication module and unit tests",
@@ -545,6 +548,7 @@ elif "Continuous In-Place" in nav_mode:
                         success, msg, changed = modify_project(task['id'], mod_prompt.strip())
                     if success:
                         st.success(f"{msg} Modified files: {', '.join(changed)}")
+                        st.session_state["continuous_mod_input"] = ""
                         st.rerun()
                     else:
                         st.error(msg)
@@ -568,7 +572,7 @@ elif "Delivery & Export" in nav_mode:
             st.markdown("**Option A: Publish to GitHub Repository**")
             st.markdown("Enter your GitHub repository name (`owner/repository`) and Personal Access Token with `repo` permissions to authorize publishing.")
             
-            with st.form("github_publish_form"):
+            with st.form("github_publish_form", clear_on_submit=True):
                 gh_repo = st.text_input("GitHub Repository (`owner/repo`)", placeholder="e.g. username/lxnoro-project", key="gh_repo_input")
                 gh_token = st.text_input("GitHub Personal Access Token", type="password", placeholder="ghp_...", key="gh_token_input")
                 gh_commit = st.text_input("Commit Message", value="LXNORO Autonomous Agent Delivery", key="gh_commit_input")
@@ -580,6 +584,9 @@ elif "Delivery & Export" in nav_mode:
                             pub_res = publish_to_github(gh_repo.strip(), gh_token.strip(), gh_commit.strip())
                         if pub_res["success"]:
                             st.success(f"Successfully published {pub_res['pushed_count']} files to GitHub repository `{gh_repo.strip()}`!")
+                            st.session_state["gh_repo_input"] = ""
+                            st.session_state["gh_token_input"] = ""
+                            st.session_state["gh_commit_input"] = "LXNORO Autonomous Agent Delivery"
                         else:
                             st.error(f"GitHub publishing failed: {pub_res.get('error') or pub_res.get('errors')}")
                     else:
