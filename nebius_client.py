@@ -6,11 +6,23 @@ NEBIUS_BASE_URL = "https://api.tokenfactory.nebius.com/v1"
 DEFAULT_NEBIUS_MODEL = "nvidia/nemotron-3-super-120b-a12b"
 
 def get_nebius_api_key() -> str:
-    """Read the API key exclusively from NEBIUS_API_KEY environment variable."""
+    """Read the API key exclusively from server-side st.secrets or environment variables."""
+    try:
+        import streamlit as st
+        if hasattr(st, "secrets") and "NEBIUS_API_KEY" in st.secrets:
+            return str(st.secrets["NEBIUS_API_KEY"]).strip()
+    except Exception:
+        pass
     return os.getenv("NEBIUS_API_KEY", "").strip()
 
 def get_nebius_model() -> str:
-    """Get the configured Nebius model, falling back to default NVIDIA Nemotron model."""
+    """Get the configured Nebius model from st.secrets or environment, falling back to default NVIDIA Nemotron model."""
+    try:
+        import streamlit as st
+        if hasattr(st, "secrets") and "NEBIUS_MODEL" in st.secrets:
+            return str(st.secrets["NEBIUS_MODEL"]).strip()
+    except Exception:
+        pass
     return os.getenv("NEBIUS_MODEL", DEFAULT_NEBIUS_MODEL).strip()
 
 def nebius_chat_completion(prompt: str, model: Optional[str] = None, timeout: int = 30) -> Dict[str, Any]:
