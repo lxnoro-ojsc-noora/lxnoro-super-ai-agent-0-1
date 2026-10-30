@@ -59,6 +59,8 @@ def log_audit(task_id: Optional[int], tool_type: str, target_path: str, success:
     except Exception:
         pass
 
+AGENT_ENGINE_FILES = {'orchestration_engine.py', 'execution_engine.py', 'workspace_tools.py', 'delivery_utils.py', 'nebius_client.py', 'agent_memory.py', 'GEMINI.md'}
+
 def list_workspace_files(task_id: Optional[int] = None) -> List[str]:
     root = get_workspace_root()
     files_list = []
@@ -67,6 +69,8 @@ def list_workspace_files(task_id: Optional[int] = None) -> List[str]:
         dirnames[:] = [d for d in dirnames if d not in PROTECTED_PATHS and not d.startswith('.')]
         for f in filenames:
             if f.startswith('.'):
+                continue
+            if f in AGENT_ENGINE_FILES:
                 continue
             full_p = os.path.join(dirpath, f)
             rel_p = os.path.relpath(full_p, root).replace('\\', '/')

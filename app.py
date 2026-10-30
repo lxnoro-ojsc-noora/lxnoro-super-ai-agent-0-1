@@ -353,7 +353,16 @@ if "Conversational AI" in nav_mode:
                         st.success("All operational steps executed successfully!")
                         st.rerun()
             else:
-                st.success("🎉 Mission objective completed! Use 'View Code' to inspect source files or 'View & Use Application' to run the app.")
+                st.success("🎉 Mission objective completed successfully!")
+                col_j1, col_j2 = st.columns(2)
+                with col_j1:
+                    if st.button("👁️ VIEW CODE (SOURCE INSPECTOR)", key="jump_view_code_btn"):
+                        st.session_state.cyber_command_nav = "👁️ View Code (Source Inspector)"
+                        st.rerun()
+                with col_j2:
+                    if st.button("🖥️ VIEW & USE APPLICATION", key="jump_view_app_btn"):
+                        st.session_state.cyber_command_nav = "🖥️ View & Use Application (Runtime & Preview)"
+                        st.rerun()
 
             st.markdown("#### 📋 Tactical Plan & Step Telemetry")
             for s in steps:
